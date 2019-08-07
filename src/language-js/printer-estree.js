@@ -806,7 +806,8 @@ function printPathNoParens(path, options, print, args) {
                 options,
                 /* expandLast */ args &&
                   (args.expandLastArg || args.expandFirstArg),
-                /* printTypeParams */ true
+                /* printTypeParams */ true,
+                {end: !!n.returnType}
               ),
               printReturnType(path, print, options)
             ])
