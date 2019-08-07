@@ -353,7 +353,7 @@ function printTernaryOperator(path, options, print, operatorOptions) {
       consequentNode.type === operatorOptions.conditionalNodeType
         ? ifBreak("", "(")
         : "",
-      path.call(print, operatorOptions.consequentNodePropertyName),
+      align(2, path.call(print, operatorOptions.consequentNodePropertyName)),
       consequentNode.type === operatorOptions.conditionalNodeType
         ? ifBreak("", ")")
         : "",
