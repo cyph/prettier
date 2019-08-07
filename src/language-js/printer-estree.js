@@ -3216,7 +3216,8 @@ function printPathNoParens(path, options, print, args) {
             print,
             options,
             /* expandArg */ false,
-            /* printTypeParams */ true
+            /* printTypeParams */ true,
+            {start: true}
           )
         )
       );
@@ -3279,7 +3280,8 @@ function printPathNoParens(path, options, print, args) {
           print,
           options,
           /* expandArg */ false,
-          /* printTypeParams */ true
+          /* printTypeParams */ true,
+          {start: true}
         )
       );
 
@@ -3716,7 +3718,14 @@ function printMethod(path, options, print) {
           printFunctionTypeParameters(valuePath, options, print),
           group(
             concat([
-              printFunctionParams(valuePath, print, options),
+              printFunctionParams(
+                valuePath,
+                print,
+                options,
+                undefined,
+                undefined,
+                {start: true, end: kind !== "constructor"}
+              ),
               printReturnType(valuePath, print, options)
             ])
           )
@@ -4225,7 +4234,7 @@ function printFunctionTypeParameters(path, options, print) {
   return "";
 }
 
-function printFunctionParams(path, print, options, expandArg, printTypeParams) {
+function printFunctionParams(path, print, options, expandArg, printTypeParams, spaces) {
   const fun = path.getValue();
   const parent = path.getParentNode();
   const paramsField = fun.parameters ? "parameters" : "params";
@@ -4237,6 +4246,9 @@ function printFunctionParams(path, print, options, expandArg, printTypeParams) {
   const typeParams = printTypeParams
     ? printFunctionTypeParameters(path, options, print)
     : "";
+
+  const startParen = spaces && spaces.start ? " (" : "(";
+  const endParen = spaces && spaces.end ? ") " : ")";
 
   let printed = [];
   if (fun[paramsField]) {
@@ -4275,7 +4287,7 @@ function printFunctionParams(path, print, options, expandArg, printTypeParams) {
   if (printed.length === 0) {
     return concat([
       typeParams,
-      "(",
+      startParen,
       comments.printDanglingComments(
         path,
         options,
@@ -4287,7 +4299,7 @@ function printFunctionParams(path, print, options, expandArg, printTypeParams) {
             options.locEnd
           ) === ")"
       ),
-      ")"
+      endParen
     ]);
   }
 
@@ -4307,9 +4319,9 @@ function printFunctionParams(path, print, options, expandArg, printTypeParams) {
     return group(
       concat([
         removeLines(typeParams),
-        "(",
+        startParen,
         concat(printed.map(removeLines)),
-        ")"
+        endParen
       ])
     );
   }
@@ -4322,12 +4334,12 @@ function printFunctionParams(path, print, options, expandArg, printTypeParams) {
   //   c
   // }) {}
   if (shouldHugParameters) {
-    return concat([typeParams, "(", concat(printed), ")"]);
+    return concat([typeParams, startParen, concat(printed), endParen]);
   }
 
   // don't break in specs, eg; `it("should maintain parens around done even when long", (done) => {})`
   if (isParametersInTestCall) {
-    return concat([typeParams, "(", concat(printed), ")"]);
+    return concat([typeParams, startParen, concat(printed), endParen]);
   }
 
   const isFlowShorthandWithOneArg =
@@ -4348,7 +4360,7 @@ function printFunctionParams(path, print, options, expandArg, printTypeParams) {
 
   if (isFlowShorthandWithOneArg) {
     if (options.arrowParens === "always") {
-      return concat(["(", concat(printed), ")"]);
+      return concat([startParen, concat(printed), endParen]);
     }
     return concat(printed);
   }
@@ -4358,13 +4370,13 @@ function printFunctionParams(path, print, options, expandArg, printTypeParams) {
 
   return concat([
     typeParams,
-    "(",
+    startParen,
     indent(concat([softline, concat(printed)])),
     ifBreak(
       canHaveTrailingComma && shouldPrintComma(options, "all") ? "," : ""
     ),
     softline,
-    ")"
+    endParen
   ]);
 }
 
@@ -4418,7 +4430,14 @@ function printFunctionDeclaration(path, print, options) {
     printFunctionTypeParameters(path, options, print),
     group(
       concat([
-        printFunctionParams(path, print, options),
+        printFunctionParams(
+          path,
+          print,
+          options,
+          undefined,
+          undefined,
+          {start: true, end: true}
+        ),
         printReturnType(path, print, options)
       ])
     ),
@@ -4459,7 +4478,14 @@ function printObjectMethod(path, options, print) {
     printFunctionTypeParameters(path, options, print),
     group(
       concat([
-        printFunctionParams(path, print, options),
+        printFunctionParams(
+          path,
+          print,
+          options,
+          undefined,
+          undefined,
+          {start: true, end: true}
+        ),
         printReturnType(path, print, options)
       ])
     ),
