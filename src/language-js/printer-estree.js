@@ -678,7 +678,7 @@ function printPathNoParens(path, options, print, args) {
           "<",
           indent(concat([softline, path.call(print, "typeAnnotation")])),
           softline,
-          ">"
+          "> "
         ])
       );
 
