@@ -305,6 +305,7 @@ function printTernaryOperator(path, options, print, operatorOptions) {
   );
   const firstNonConditionalParent = currentParent || parent;
   const lastConditionalParent = previousParent;
+  const lastNonConditionalParent = path.getParentNode(i - 3);
 
   if (
     operatorOptions.shouldCheckJsx &&
@@ -348,8 +349,8 @@ function printTernaryOperator(path, options, print, operatorOptions) {
   } else {
     // normal mode
     const part = concat([
+      " ?",
       line,
-      "? ",
       consequentNode.type === operatorOptions.conditionalNodeType
         ? ifBreak("", "(")
         : "",
@@ -357,8 +358,8 @@ function printTernaryOperator(path, options, print, operatorOptions) {
       consequentNode.type === operatorOptions.conditionalNodeType
         ? ifBreak("", ")")
         : "",
-      line,
-      ": ",
+      " :",
+      parent === lastNonConditionalParent ? line : align(-2, line),
       alternateNode.type === operatorOptions.conditionalNodeType
         ? path.call(print, operatorOptions.alternateNodePropertyName)
         : align(2, path.call(print, operatorOptions.alternateNodePropertyName))
