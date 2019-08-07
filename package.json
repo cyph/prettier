@@ -1,11 +1,11 @@
 {
-  "name": "prettier",
+  "name": "@cyph/prettier",
   "version": "1.18.1",
-  "description": "Prettier is an opinionated code formatter",
+  "description": "Fork of prettier for Cyph style guidelines",
   "bin": {
-    "prettier": "./bin/prettier.js"
+    "cyphPrettier": "./bin/prettier.js"
   },
-  "repository": "prettier/prettier",
+  "repository": "cyph/prettier",
   "homepage": "https://prettier.io",
   "author": "James Long",
   "license": "MIT",
