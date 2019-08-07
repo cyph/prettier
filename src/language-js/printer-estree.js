@@ -3289,7 +3289,7 @@ function printPathNoParens(path, options, print, args) {
           options,
           /* expandArg */ false,
           /* printTypeParams */ true,
-          {start: true}
+          {start: true, end: true}
         )
       );
 
