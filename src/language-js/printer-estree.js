@@ -305,7 +305,6 @@ function printTernaryOperator(path, options, print, operatorOptions) {
   );
   const firstNonConditionalParent = currentParent || parent;
   const lastConditionalParent = previousParent;
-  const lastNonConditionalParent = path.getParentNode(i - 3);
 
   if (
     operatorOptions.shouldCheckJsx &&
@@ -359,11 +358,10 @@ function printTernaryOperator(path, options, print, operatorOptions) {
         ? ifBreak("", ")")
         : "",
       " :",
-      parent === lastNonConditionalParent ? line : align(-2, line),
-      alternateNode.type === operatorOptions.conditionalNodeType
-        ? path.call(print, operatorOptions.alternateNodePropertyName)
-        : align(2, path.call(print, operatorOptions.alternateNodePropertyName))
+      align(-2, line),
+      path.call(print, operatorOptions.alternateNodePropertyName)
     ]);
+
     parts.push(
       parent.type !== operatorOptions.conditionalNodeType ||
         parent[operatorOptions.alternateNodePropertyName] === node
@@ -395,7 +393,7 @@ function printTernaryOperator(path, options, print, operatorOptions) {
       parent.type === "OptionalMemberExpression") &&
     !parent.computed;
 
-  return maybeGroup(
+  const chain = maybeGroup(
     concat(
       [].concat(
         (testDoc =>
@@ -418,6 +416,13 @@ function printTernaryOperator(path, options, print, operatorOptions) {
       )
     )
   );
+
+  if (chain.type === 'group') {
+    /* Fix alignment on final "else" of the ternary. TODO: Find cleaner implementation. */
+    return JSON.parse(JSON.stringify(chain).replace(/(.*)"n":-2/, (_, s) => s + '"n":0'));
+  }
+
+  return chain;
 }
 
 function getTypeScriptMappedTypeModifier(tokenNode, keyword) {
