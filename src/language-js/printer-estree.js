@@ -361,7 +361,10 @@ function printTernaryOperator(path, options, print, operatorOptions) {
         ? ifBreak("", ")")
         : "",
       " :",
-      align(-2, line),
+      align(
+        alternateNode.type === operatorOptions.conditionalNodeType ? -2 : 0,
+        line
+      ),
       path.call(print, operatorOptions.alternateNodePropertyName)
     ]);
 
