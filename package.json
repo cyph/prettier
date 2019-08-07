@@ -3,7 +3,7 @@
   "version": "2.0.1",
   "description": "Fork of prettier for Cyph style guidelines",
   "bin": {
-    "cyph-prettier": "./bin/cyph-prettier.js"
+    "cyphPrettier": "./bin/prettier.js"
   },
   "repository": "cyph/prettier",
   "homepage": "https://prettier.io",
