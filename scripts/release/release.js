@@ -36,7 +36,7 @@ async function run() {
     require("./steps/run-tests"),
     require("./steps/update-version"),
     require("./steps/generate-bundles"),
-    require("./steps/update-changelog"),
+    // require("./steps/update-changelog"),
     require("./steps/push-to-git"),
     require("./steps/publish-to-npm"),
     require("./steps/bump-prettier"),

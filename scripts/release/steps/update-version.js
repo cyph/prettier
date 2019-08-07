@@ -16,9 +16,11 @@ async function bump({ version }) {
     content.replace(/^(- Prettier Version: ).*?$/m, `$1${version}`)
   );
 
+  /*
   await execa("yarn", ["update-stable-docs"], {
     cwd: "./website"
   });
+  */
 }
 
 module.exports = async function(params) {
