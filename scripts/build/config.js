@@ -129,9 +129,9 @@ const coreBundles = [
     target: "universal"
   },
   {
-    input: "bin/prettier.js",
+    input: "bin/cyph-prettier.js",
     type: "core",
-    output: "bin-prettier.js",
+    output: "bin-cyph-prettier.js",
     target: "node",
     externals: [path.resolve("src/common/third-party.js")]
   },
