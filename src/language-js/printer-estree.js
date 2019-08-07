@@ -1791,6 +1791,7 @@ function printPathNoParens(path, options, print, args) {
         }
 
         parts.push(
+          line,
           "else",
           group(
             adjustClause(
@@ -1959,7 +1960,7 @@ function printPathNoParens(path, options, print, args) {
         "try ",
         path.call(print, "block"),
         n.handler ? concat([" ", path.call(print, "handler")]) : "",
-        n.finalizer ? concat([" finally ", path.call(print, "finalizer")]) : ""
+        n.finalizer ? concat([line, "finally ", path.call(print, "finalizer")]) : ""
       ]);
     case "CatchClause":
       if (n.param) {
@@ -1978,6 +1979,7 @@ function printPathNoParens(path, options, print, args) {
         const param = path.call(print, "param");
 
         return concat([
+          line,
           "catch ",
           hasComments
             ? concat(["(", indent(concat([softline, param])), softline, ") "])
@@ -1986,7 +1988,7 @@ function printPathNoParens(path, options, print, args) {
         ]);
       }
 
-      return concat(["catch ", path.call(print, "body")]);
+      return concat([line, "catch ", path.call(print, "body")]);
     case "ThrowStatement":
       return concat(["throw ", path.call(print, "argument"), semi]);
     // Note: ignoring n.lexical because it has no printing consequences.
