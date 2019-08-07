@@ -353,7 +353,10 @@ function printTernaryOperator(path, options, print, operatorOptions) {
       consequentNode.type === operatorOptions.conditionalNodeType
         ? ifBreak("", "(")
         : "",
-      align(2, path.call(print, operatorOptions.consequentNodePropertyName)),
+      align(
+        consequentNode.type === operatorOptions.conditionalNodeType ? 2 : 0,
+        path.call(print, operatorOptions.consequentNodePropertyName)
+      ),
       consequentNode.type === operatorOptions.conditionalNodeType
         ? ifBreak("", ")")
         : "",
@@ -409,7 +412,7 @@ function printTernaryOperator(path, options, print, operatorOptions) {
            */
           parent.type === operatorOptions.conditionalNodeType &&
           parent[operatorOptions.alternateNodePropertyName] === node
-            ? align(2, testDoc)
+            ? align(-2, testDoc)
             : testDoc)(concat(operatorOptions.beforeParts())),
         forceNoIndent ? concat(parts) : indent(concat(parts)),
         operatorOptions.afterParts(breakClosingParen)
