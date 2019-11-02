@@ -8,8 +8,6 @@ const globby = require("globby");
 const chalk = require("chalk");
 const readline = require("readline");
 const stringify = require("json-stable-stringify");
-const findCacheDir = require("find-cache-dir");
-const os = require("os");
 
 const minimist = require("./minimist");
 const prettier = require("../../index");
@@ -22,7 +20,6 @@ const optionsNormalizer = require("../main/options-normalizer");
 const thirdParty = require("../common/third-party");
 const arrayify = require("../utils/arrayify");
 const isTTY = require("../utils/is-tty");
-const ChangedCache = require("./changed-cache");
 
 const OPTION_USAGE_THRESHOLD = 25;
 const CHOICE_USAGE_MARGIN = 3;
@@ -75,23 +72,21 @@ function handleError(context, filename, error) {
   }
 
   const isParseError = Boolean(error && error.loc);
-  const isValidationError = /Validation Error/.test(error && error.message);
+  const isValidationError = /^Invalid \S+ value\./.test(error && error.message);
 
-  // For parse errors and validation errors, we only want to show the error
-  // message formatted in a nice way. `String(error)` takes care of that. Other
-  // (unexpected) errors are passed as-is as a separate argument to
-  // `console.error`. That includes the stack trace (if any), and shows a nice
-  // `util.inspect` of throws things that aren't `Error` objects. (The Flow
-  // parser has mistakenly thrown arrays sometimes.)
   if (isParseError) {
+    // `invalid.js: SyntaxError: Unexpected token (1:1)`.
     context.logger.error(`${filename}: ${String(error)}`);
   } else if (isValidationError || error instanceof errors.ConfigError) {
-    context.logger.error(String(error));
+    // `Invalid printWidth value. Expected an integer, but received 0.5.`
+    context.logger.error(error.message);
     // If validation fails for one file, it will fail for all of them.
     process.exit(1);
   } else if (error instanceof errors.DebugError) {
+    // `invalid.js: Some debug error message`
     context.logger.error(`${filename}: ${error.message}`);
   } else {
+    // `invalid.js: Error: Some unexpected error\n[stack trace]`
     context.logger.error(filename + ": " + (error.stack || error));
   }
 
@@ -371,24 +366,25 @@ function formatStdin(context) {
   const ignorer = createIgnorerFromContextOrDie(context);
   const relativeFilepath = path.relative(process.cwd(), filepath);
 
-  thirdParty.getStream(process.stdin).then(input => {
-    if (relativeFilepath && ignorer.filter([relativeFilepath]).length === 0) {
-      writeOutput(context, { formatted: input });
-      return;
-    }
+  thirdParty
+    .getStream(process.stdin)
+    .then(input => {
+      if (relativeFilepath && ignorer.filter([relativeFilepath]).length === 0) {
+        writeOutput(context, { formatted: input });
+        return;
+      }
 
-    const options = getOptionsForFile(context, filepath);
+      const options = getOptionsForFile(context, filepath);
 
-    try {
       if (listDifferent(context, input, options, "(stdin)")) {
         return;
       }
 
       writeOutput(context, format(context, input, options), options);
-    } catch (error) {
+    })
+    .catch(error => {
       handleError(context, relativeFilepath || "stdin", error);
-    }
-  });
+    });
 }
 
 function createIgnorerFromContextOrDie(context) {
@@ -444,20 +440,6 @@ function formatFiles(context) {
     context.logger.log("Checking formatting...");
   }
 
-  let changedCache = null;
-  if (context.argv["only-changed"]) {
-    const cacheDir =
-      findCacheDir({ name: "prettier", create: true }) || os.tmpdir();
-
-    changedCache = new ChangedCache({
-      location: path.join(cacheDir, "changed"),
-      readFile: fs.readFileSync,
-      writeFile: thirdParty.writeFileAtomic,
-      context: context,
-      supportInfo: prettier.getSupportInfo()
-    });
-  }
-
   eachFilename(context, context.filePatterns, filename => {
     const fileIgnored = ignorer.filter([filename]).length === 0;
     if (
@@ -474,15 +456,8 @@ function formatFiles(context) {
       filepath: filename
     });
 
-    let removeFilename = () => {};
     if (isTTY()) {
-      // Don't use `console.log` here since we need to replace this line.
       context.logger.log(filename, { newline: false });
-      removeFilename = () => {
-        readline.clearLine(process.stdout, 0);
-        readline.cursorTo(process.stdout, 0, null);
-        removeFilename = () => {};
-      };
     }
 
     let input;
@@ -498,19 +473,6 @@ function formatFiles(context) {
       // Don't exit the process if one file failed
       process.exitCode = 2;
       return;
-    }
-
-    if (changedCache) {
-      if (changedCache.notChanged(filename, options, input)) {
-        // Remove previously printed filename to log it with "unchanged".
-        removeFilename();
-
-        if (!context.argv["check"] && !context.argv["list-different"]) {
-          context.logger.log(chalk.grey(`${filename} unchanged`));
-        }
-
-        return;
-      }
     }
 
     if (fileIgnored) {
@@ -537,8 +499,11 @@ function formatFiles(context) {
 
     const isDifferent = output !== input;
 
-    // Remove previously printed filename to log it with duration.
-    removeFilename();
+    if (isTTY()) {
+      // Remove previously printed filename to log it with duration.
+      readline.clearLine(process.stdout, 0);
+      readline.cursorTo(process.stdout, 0, null);
+    }
 
     if (context.argv["write"]) {
       // Don't write the file if it won't change in order not to invalidate
@@ -557,15 +522,8 @@ function formatFiles(context) {
           // Don't exit the process if one file failed
           process.exitCode = 2;
         }
-      } else {
-        if (!context.argv["check"] && !context.argv["list-different"]) {
-          context.logger.log(`${chalk.grey(filename)} ${Date.now() - start}ms`);
-        }
-      }
-
-      // Cache is updated to record pretty content.
-      if (changedCache) {
-        changedCache.update(filename, options, output);
+      } else if (!context.argv["check"] && !context.argv["list-different"]) {
+        context.logger.log(`${chalk.grey(filename)} ${Date.now() - start}ms`);
       }
     } else if (context.argv["debug-check"]) {
       if (result.filepath) {
@@ -585,10 +543,6 @@ function formatFiles(context) {
       numberOfUnformattedFilesFound += 1;
     }
   });
-
-  if (changedCache) {
-    changedCache.close();
-  }
 
   // Print check summary based on expected exit code
   if (context.argv["check"]) {
@@ -866,7 +820,7 @@ function normalizeDetailedOption(name, option) {
           typeof choice === "object" ? choice : { value: choice }
         );
         if (newChoice.value === true) {
-          newChoice.value = ""; // backward compability for original boolean option
+          newChoice.value = ""; // backward compatibility for original boolean option
         }
         return newChoice;
       })

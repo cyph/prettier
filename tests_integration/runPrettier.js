@@ -3,6 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 const stripAnsi = require("strip-ansi");
+const SynchronousPromise = require("synchronous-promise").SynchronousPromise;
 
 const isProduction = process.env.NODE_ENV === "production";
 const prettierRootDir = isProduction ? process.env.PRETTIER_DIR : "../";
@@ -64,18 +65,6 @@ function runPrettier(dir, args, options) {
     return origStatSync(filename);
   });
 
-  // Mock contents of "virtualFiles" when option is defined.
-  const origReadFileSync = fs.readFileSync;
-  jest.spyOn(fs, "readFileSync").mockImplementation((filename, opts) => {
-    if (
-      typeof options.virtualFiles === "object" &&
-      typeof options.virtualFiles[filename] === "string"
-    ) {
-      return options.virtualFiles[filename];
-    }
-    return origReadFileSync(filename, opts);
-  });
-
   const originalCwd = process.cwd();
   const originalArgv = process.argv;
   const originalExitCode = process.exitCode;
@@ -94,9 +83,9 @@ function runPrettier(dir, args, options) {
   // We cannot use `jest.setMock("get-stream", impl)` here, because in the
   // production build everything is bundled into one file so there is no
   // "get-stream" module to mock.
-  jest.spyOn(require(thirdParty), "getStream").mockImplementation(() => ({
-    then: handler => handler(options.input || "")
-  }));
+  jest
+    .spyOn(require(thirdParty), "getStream")
+    .mockImplementation(() => SynchronousPromise.resolve(options.input || ""));
   jest
     .spyOn(require(thirdParty), "isCI")
     .mockImplementation(() => process.env.CI);
@@ -111,11 +100,6 @@ function runPrettier(dir, args, options) {
   jest
     .spyOn(require(thirdParty), "findParentDir")
     .mockImplementation(() => process.cwd());
-  jest
-    .spyOn(require(thirdParty), "writeFileAtomic")
-    .mockImplementation((filename, content) => {
-      write.push({ filename, content });
-    });
 
   try {
     require(prettierCli);
@@ -152,9 +136,6 @@ function runPrettier(dir, args, options) {
         if (name in testOptions) {
           if (name === "status" && testOptions[name] === "non-zero") {
             expect(value).not.toEqual(0);
-          } else if (name === "write") {
-            // Allows assertions on a subset of the "write" result. (ex. only file name)
-            expect(value).toMatchObject(testOptions[name]);
           } else {
             expect(value).toEqual(testOptions[name]);
           }
