@@ -130,10 +130,10 @@ function printMethod(path, options, print) {
   );
 
   if (node === value) {
-    parts.push(printMethodInternal(path, options, print));
+    parts.push(printMethodInternal(path, options, print, kind));
   } else if (value.type === "FunctionExpression") {
     parts.push(
-      path.call((path) => printMethodInternal(path, options, print), "value")
+      path.call((path) => printMethodInternal(path, options, print, kind), "value")
     );
   } else {
     parts.push(print("value"));
@@ -142,7 +142,7 @@ function printMethod(path, options, print) {
   return parts;
 }
 
-function printMethodInternal(path, options, print) {
+function printMethodInternal(path, options, print, kind) {
   const node = path.getNode();
   const parametersDoc = printFunctionParameters(
     path,
@@ -150,7 +150,7 @@ function printMethodInternal(path, options, print) {
     options,
     undefined,
     undefined,
-    {start: true, end: node.kind !== "constructor"}
+    {start: true, end: kind !== "constructor"}
   );
   const returnTypeDoc = printReturnType(path, print, options);
   const shouldGroupParameters = shouldGroupFunctionParameters(

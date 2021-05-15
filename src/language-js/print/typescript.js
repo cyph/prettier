@@ -538,7 +538,7 @@ function printTypescript(path, options, print) {
     case "TSTypeAnnotation":
       return print("typeAnnotation");
     case "TSEmptyBodyFunctionExpression":
-      return printMethodInternal(path, options, print);
+      return printMethodInternal(path, options, print, node.kind);
 
     // These are not valid TypeScript. Printing them just for the sake of error recovery.
     case "TSJSDocAllType":
