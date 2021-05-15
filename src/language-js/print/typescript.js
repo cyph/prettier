@@ -299,7 +299,8 @@ function printTypescript(path, options, print) {
             print,
             options,
             /* expandArg */ false,
-            /* printTypeParams */ true
+            /* printTypeParams */ true,
+            {start: true}
           )
         )
       );
@@ -372,7 +373,8 @@ function printTypescript(path, options, print) {
         print,
         options,
         /* expandArg */ false,
-        /* printTypeParams */ true
+        /* printTypeParams */ true,
+        {start: true}
       );
 
       const returnTypePropertyName = node.returnType

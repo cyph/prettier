@@ -76,7 +76,9 @@ function printFunctionDeclaration(path, print, options, expandArg) {
     path,
     print,
     options,
-    expandArg
+    expandArg,
+    undefined,
+    {start: true, end: true}
   );
   const returnTypeDoc = printReturnType(path, print, options);
   const shouldGroupParameters = shouldGroupFunctionParameters(
@@ -142,7 +144,14 @@ function printMethod(path, options, print) {
 
 function printMethodInternal(path, options, print) {
   const node = path.getNode();
-  const parametersDoc = printFunctionParameters(path, print, options);
+  const parametersDoc = printFunctionParameters(
+    path,
+    print,
+    options,
+    undefined,
+    undefined,
+    {start: true, end: node.kind !== "constructor"}
+  );
   const returnTypeDoc = printReturnType(path, print, options);
   const shouldGroupParameters = shouldGroupFunctionParameters(
     node,
