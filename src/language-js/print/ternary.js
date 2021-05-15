@@ -282,7 +282,7 @@ function printTernary(path, options, print) {
       " ?",
       line,
       consequentNode.type === node.type ? ifBreak("", "(") : "",
-      print(consequentNodePropertyName),
+      align(2, print(consequentNodePropertyName)),
       consequentNode.type === node.type ? ifBreak("", ")") : "",
       " :",
       align(-2, line),
