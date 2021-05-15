@@ -236,7 +236,6 @@ function printTernary(path, options, print) {
   );
   const firstNonConditionalParent = currentParent || parent;
   const lastConditionalParent = previousParent;
-  const lastNonConditionalParent = path.getParentNode(i - 3);
 
   if (
     isConditionalExpression &&
@@ -286,10 +285,8 @@ function printTernary(path, options, print) {
       align(2, print(consequentNodePropertyName)),
       consequentNode.type === node.type ? ifBreak("", ")") : "",
       " :",
-      parent === lastNonConditionalParent ? line : align(-2, line),
-      alternateNode.type === node.type
-        ? print(alternateNodePropertyName)
-        : align(2, print(alternateNodePropertyName)),
+      align(-2, line),
+      print(alternateNodePropertyName)
     ];
     parts.push(
       parent.type !== node.type ||
@@ -348,6 +345,11 @@ function printTernary(path, options, print) {
       ? softline
       : "",
   ]);
+
+  if (result.type === 'group') {
+    /* Fix alignment on final "else" of the ternary. TODO: Find cleaner implementation. */
+    return JSON.parse(JSON.stringify(result).replace(/(.*)"n":-2/, (_, s) => s + '"n":0'));
+  }
 
   return isParentTest || shouldExtraIndent
     ? group([indent([softline, result]), softline])
