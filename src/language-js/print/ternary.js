@@ -129,7 +129,7 @@ function printTernaryTest(path, options, print) {
    *       : e
    */
   if (parent.type === node.type && parent[alternateNodePropertyName] === node) {
-    return align(2, printed);
+    return align(-2, printed);
   }
   return printed;
 }
@@ -282,7 +282,10 @@ function printTernary(path, options, print) {
       " ?",
       line,
       consequentNode.type === node.type ? ifBreak("", "(") : "",
-      align(2, print(consequentNodePropertyName)),
+      align(
+        consequentNode.type === "ConditionalExpression" ? 2 : 0,
+        print(consequentNodePropertyName)
+      ),
       consequentNode.type === node.type ? ifBreak("", ")") : "",
       " :",
       align(-2, line),
