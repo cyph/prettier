@@ -519,6 +519,7 @@ function printPathNoParens(path, options, print, args) {
         }
 
         parts.push(
+          line,
           "else",
           group(
             adjustClause(
@@ -652,7 +653,7 @@ function printPathNoParens(path, options, print, args) {
         "try ",
         print("block"),
         node.handler ? [" ", print("handler")] : "",
-        node.finalizer ? [" finally ", print("finalizer")] : "",
+        node.finalizer ? [line, "finally ", print("finalizer")] : "",
       ];
     case "CatchClause":
       if (node.param) {
@@ -670,6 +671,7 @@ function printPathNoParens(path, options, print, args) {
         const param = print("param");
 
         return [
+          line,
           "catch ",
           parameterHasComments
             ? ["(", indent([softline, param]), softline, ") "]
@@ -678,7 +680,7 @@ function printPathNoParens(path, options, print, args) {
         ];
       }
 
-      return ["catch ", print("body")];
+      return [line, "catch ", print("body")];
     // Note: ignoring n.lexical because it has no printing consequences.
     case "SwitchStatement":
       return [
