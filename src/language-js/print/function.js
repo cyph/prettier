@@ -78,7 +78,7 @@ function printFunctionDeclaration(path, print, options, expandArg) {
     options,
     expandArg,
     undefined,
-    {start: !!(node.id && node.id.name), end: true}
+    {start: !!(node.id && node.id.name), end: !!node.returnType}
   );
   const returnTypeDoc = printReturnType(path, print, options);
   const shouldGroupParameters = shouldGroupFunctionParameters(
