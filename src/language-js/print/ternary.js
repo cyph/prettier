@@ -288,7 +288,10 @@ function printTernary(path, options, print) {
       ),
       consequentNode.type === node.type ? ifBreak("", ")") : "",
       " :",
-      align(-2, line),
+      align(
+        alternateNode.type === "ConditionalExpression" ? -2 : 0,
+        line
+      ),
       print(alternateNodePropertyName)
     ];
     parts.push(
