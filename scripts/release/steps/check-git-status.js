@@ -1,12 +1,12 @@
 "use strict";
 
-const execa = require("execa");
+const { runGit } = require("../utils");
 
-module.exports = async function() {
-  const status = await execa.stdout("git", ["status", "--porcelain"]);
+module.exports = async function () {
+  const { stdout: status } = await runGit(["status", "--porcelain"]);
 
   if (status) {
-    throw Error(
+    throw new Error(
       "Uncommitted local changes. " +
         "Please revert or commit all local changes before making a release."
     );
