@@ -192,7 +192,8 @@ function printArrowFunctionSignature(path, options, print, args) {
           print,
           options,
           /* expandLast */ args && (args.expandLastArg || args.expandFirstArg),
-          /* printTypeParams */ true
+          /* printTypeParams */ true,
+          {end: !!node.returnType}
         ),
         printReturnType(path, print, options),
       ])
