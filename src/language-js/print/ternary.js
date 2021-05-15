@@ -236,6 +236,7 @@ function printTernary(path, options, print) {
   );
   const firstNonConditionalParent = currentParent || parent;
   const lastConditionalParent = previousParent;
+  const lastNonConditionalParent = path.getParentNode(i - 3);
 
   if (
     isConditionalExpression &&
@@ -279,13 +280,13 @@ function printTernary(path, options, print) {
   } else {
     // normal mode
     const part = [
+      " ?",
       line,
-      "? ",
       consequentNode.type === node.type ? ifBreak("", "(") : "",
       align(2, print(consequentNodePropertyName)),
       consequentNode.type === node.type ? ifBreak("", ")") : "",
-      line,
-      ": ",
+      " :",
+      parent === lastNonConditionalParent ? line : align(-2, line),
       alternateNode.type === node.type
         ? print(alternateNodePropertyName)
         : align(2, print(alternateNodePropertyName)),
