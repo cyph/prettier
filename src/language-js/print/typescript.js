@@ -65,7 +65,7 @@ function printTypescript(path, options, print) {
         "<",
         indent([softline, print("typeAnnotation")]),
         softline,
-        ">",
+        "> ",
       ]);
 
       const exprContents = [
