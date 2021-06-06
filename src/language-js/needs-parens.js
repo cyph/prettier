@@ -13,6 +13,7 @@ const {
   getPrecedence,
   isCallExpression,
   isMemberExpression,
+  isObjectProperty,
 } = require("./utils");
 
 function needsParens(path, options) {
@@ -413,7 +414,6 @@ function needsParens(path, options) {
           return false;
       }
 
-    case "TSJSDocFunctionType":
     case "TSConditionalType":
       if (name === "extendsType" && parent.type === "TSConditionalType") {
         return true;
@@ -763,9 +763,8 @@ function needsParens(path, options) {
           parent.type !== "JSXExpressionContainer" &&
           parent.type !== "JSXFragment" &&
           parent.type !== "LogicalExpression" &&
-          parent.type !== "ObjectProperty" &&
           !isCallExpression(parent) &&
-          parent.type !== "Property" &&
+          !isObjectProperty(parent) &&
           parent.type !== "ReturnStatement" &&
           parent.type !== "ThrowStatement" &&
           parent.type !== "TypeCastExpression" &&
