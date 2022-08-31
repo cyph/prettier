@@ -1,13 +1,16 @@
 "use strict";
 
 const path = require("path");
-const installPrettier = require("./scripts/install-prettier");
+const installPrettier = require("./tests/config/install-prettier.js");
 
 const PROJECT_ROOT = __dirname;
 const isProduction = process.env.NODE_ENV === "production";
 const ENABLE_CODE_COVERAGE = Boolean(process.env.ENABLE_CODE_COVERAGE);
 const TEST_STANDALONE = Boolean(process.env.TEST_STANDALONE);
 const INSTALL_PACKAGE = Boolean(process.env.INSTALL_PACKAGE);
+const SKIP_TESTS_WITH_NEW_SYNTAX =
+  process.versions.node.startsWith("10.") ||
+  process.versions.node.startsWith("12.");
 
 let PRETTIER_DIR = isProduction
   ? path.join(PROJECT_ROOT, "dist")
@@ -52,12 +55,22 @@ if (isProduction) {
   );
 }
 
+if (SKIP_TESTS_WITH_NEW_SYNTAX) {
+  testPathIgnorePatterns.push(
+    "<rootDir>/tests/integration/__tests__/help-options.js"
+  );
+}
+
 module.exports = {
   setupFiles: ["<rootDir>/tests/config/setup.js"],
   snapshotSerializers: [
     "jest-snapshot-serializer-raw",
     "jest-snapshot-serializer-ansi",
   ],
+  snapshotFormat: {
+    escapeString: false,
+    printBasicPrototype: false,
+  },
   testRegex: "jsfmt\\.spec\\.js$|__tests__/.*\\.js$",
   testPathIgnorePatterns,
   collectCoverage: ENABLE_CODE_COVERAGE,
@@ -71,7 +84,11 @@ module.exports = {
     "prettier-local": "<rootDir>/tests/config/require-prettier.js",
     "prettier-standalone": "<rootDir>/tests/config/require-standalone.js",
   },
-  modulePathIgnorePatterns: ["<rootDir>/dist", "<rootDir>/website"],
+  modulePathIgnorePatterns: [
+    "<rootDir>/dist",
+    "<rootDir>/website",
+    "<rootDir>/scripts/release",
+  ],
   transform,
   watchPlugins: [
     "jest-watch-typeahead/filename",

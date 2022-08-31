@@ -4,7 +4,7 @@ const assert = require("assert");
 
 const {
   builders: { line, hardline, breakParent, indent, lineSuffix, join, cursor },
-} = require("../document");
+} = require("../document/index.js");
 
 const {
   hasNewline,
@@ -14,7 +14,7 @@ const {
   addLeadingComment,
   addDanglingComment,
   addTrailingComment,
-} = require("../common/util");
+} = require("../common/util.js");
 
 const childNodesCache = new WeakMap();
 function getSortedChildNodes(node, options, resultArray) {
@@ -55,7 +55,8 @@ function getSortedChildNodes(node, options, resultArray) {
             key !== "precedingNode" &&
             key !== "followingNode" &&
             key !== "tokens" &&
-            key !== "comments"
+            key !== "comments" &&
+            key !== "parent"
         )
         .map(([, value]) => value));
 
@@ -199,7 +200,8 @@ function attach(comments, ast, text, options) {
       options.parser === "json" ||
       options.parser === "json5" ||
       options.parser === "__js_expression" ||
-      options.parser === "__vue_expression"
+      options.parser === "__vue_expression" ||
+      options.parser === "__vue_ts_expression"
     ) {
       if (locStart(comment) - locStart(ast) <= 0) {
         addLeadingComment(ast, comment);

@@ -3,20 +3,20 @@
 /** @typedef {import("../../document").Doc} Doc */
 
 const assert = require("assert");
-const { printDanglingComments } = require("../../main/comments");
-const { printString, printNumber } = require("../../common/util");
+const { printDanglingComments } = require("../../main/comments.js");
+const { printString, printNumber } = require("../../common/util.js");
 const {
   builders: { hardline, softline, group, indent },
-} = require("../../document");
+} = require("../../document/index.js");
 const {
   getParentExportDeclaration,
   isFunctionNotation,
   isGetterOrSetter,
   rawText,
   shouldPrintComma,
-} = require("../utils");
-const { locStart, locEnd } = require("../loc");
-const { printClass } = require("./class");
+} = require("../utils/index.js");
+const { locStart, locEnd } = require("../loc.js");
+const { printClass } = require("./class.js");
 const {
   printOpaqueType,
   printTypeAlias,
@@ -25,24 +25,24 @@ const {
   printFunctionType,
   printTupleType,
   printIndexedAccessType,
-} = require("./type-annotation");
-const { printInterface } = require("./interface");
+} = require("./type-annotation.js");
+const { printInterface } = require("./interface.js");
 const {
   printTypeParameter,
   printTypeParameters,
-} = require("./type-parameters");
+} = require("./type-parameters.js");
 const {
   printExportDeclaration,
   printExportAllDeclaration,
-} = require("./module");
-const { printArrayItems } = require("./array");
-const { printObject } = require("./object");
-const { printPropertyKey } = require("./property");
+} = require("./module.js");
+const { printArrayItems } = require("./array.js");
+const { printObject } = require("./object.js");
+const { printPropertyKey } = require("./property.js");
 const {
   printOptionalToken,
   printTypeAnnotation,
   printRestSpread,
-} = require("./misc");
+} = require("./misc.js");
 
 function printFlow(path, options, print) {
   const node = path.getValue();
@@ -230,6 +230,7 @@ function printFlow(path, options, print) {
       return parts;
     case "ObjectTypeIndexer": {
       return [
+        node.static ? "static " : "",
         node.variance ? print("variance") : "",
         "[",
         print("id"),
@@ -273,6 +274,7 @@ function printFlow(path, options, print) {
     // Same as `RestElement`
     case "ObjectTypeSpreadProperty":
       return printRestSpread(path, options, print);
+    case "QualifiedTypeofIdentifier":
     case "QualifiedTypeIdentifier":
       return [print("qualification"), ".", print("id")];
     case "StringLiteralTypeAnnotation":
