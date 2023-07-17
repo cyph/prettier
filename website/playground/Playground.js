@@ -8,7 +8,8 @@ import { shallowEqual } from "./helpers.js";
 import * as urlHash from "./urlHash.js";
 import formatMarkdown from "./markdown.js";
 import * as util from "./util.js";
-import getCodeSample from "./codeSamples.js";
+import generateDummyId from "./dummyId.js";
+import getCodeSample from "./codeSamples.mjs";
 
 import { Sidebar, SidebarCategory } from "./sidebar/components.js";
 import SidebarOptions from "./sidebar/SidebarOptions.js";
@@ -47,6 +48,7 @@ const ENABLED_OPTIONS = [
   "vueIndentScriptAndStyle",
   "embeddedLanguageFormatting",
   "bracketSameLine",
+  "singleAttributePerLine",
 ];
 
 class Playground extends React.Component {
@@ -62,15 +64,39 @@ class Playground extends React.Component {
 
     const options = Object.assign(defaultOptions, original.options);
 
-    // backwards support for old parser `babylon`
+    // 0.0.0 ~ 0.0.10
     if (options.parser === "babylon") {
       options.parser = "babel";
     }
 
-    const content = original.content || getCodeSample(options.parser);
+    // 0.0.0 ~ 0.0.10
+    if (options.useFlowParser) {
+      options.parser ??= "flow";
+    }
+
+    // 1.8.2 ~ 1.9.0
+    if (typeof options.proseWrap === "boolean") {
+      options.proseWrap = options.proseWrap ? "always" : "never";
+    }
+
+    // 0.0.0 ~ 1.9.0
+    if (typeof options.trailingComma === "boolean") {
+      options.trailingComma = options.trailingComma ? "es5" : "none";
+    }
+
+    // 0.17.0 ~ 2.4.0
+    if (options.jsxBracketSameLine) {
+      delete options.jsxBracketSameLine;
+      options.bracketSameLine ??= options.jsxBracketSameLine;
+    }
+
+    const codeSample = getCodeSample(options.parser);
+    const content = original.content || codeSample;
+    const needsClickForFirstRun =
+      options.parser === "doc-explorer" && content !== codeSample;
     const selection = {};
 
-    this.state = { content, options, selection };
+    this.state = { content, options, selection, needsClickForFirstRun };
 
     this.handleOptionValueChange = this.handleOptionValueChange.bind(this);
 
@@ -80,14 +106,10 @@ class Playground extends React.Component {
     this.setSelection = (selection) => this.setState({ selection });
     this.setSelectionAsRange = () => {
       const { selection, content, options } = this.state;
-      const { head, anchor } = selection;
-      const range = [head, anchor].map(
-        ({ ch, line }) =>
-          content.split("\n").slice(0, line).join("\n").length +
-          ch +
-          (line ? 1 : 0)
+      const [rangeStart, rangeEnd] = util.convertSelectionToRange(
+        selection,
+        content
       );
-      const [rangeStart, rangeEnd] = range.sort((a, b) => a - b);
       const updatedOptions = { ...options, rangeStart, rangeEnd };
       if (rangeStart === rangeEnd) {
         delete updatedOptions.rangeStart;
@@ -103,6 +125,9 @@ class Playground extends React.Component {
     this.rangeEndOption = props.availableOptions.find(
       (opt) => opt.name === "rangeEnd"
     );
+
+    this.formatInput = this.formatInput.bind(this);
+    this.insertDummyId = this.insertDummyId.bind(this);
   }
 
   componentDidUpdate(_, prevState) {
@@ -131,6 +156,10 @@ class Playground extends React.Component {
           ? getCodeSample(options.parser)
           : state.content;
 
+      if (option.name === "parser") {
+        state.needsClickForFirstRun = false;
+      }
+
       return { options, content };
     });
   }
@@ -158,26 +187,64 @@ class Playground extends React.Component {
     });
   }
 
-  render() {
-    const { worker, version } = this.props;
-    const { content, options } = this.state;
+  formatInput() {
+    if (this.state.options.parser !== "doc-explorer") {
+      return;
+    }
 
-    // TODO: remove this when v2.3.0 is released
-    const [major, minor] = version.split(".", 2).map(Number);
-    const showShowComments =
-      Number.isNaN(major) || (major === 2 && minor >= 3) || major > 2;
+    const { content, selection } = this.state;
+
+    return this.props.worker
+      .format(content, {
+        parser: "__js_expression",
+        cursorOffset: util.convertSelectionToRange(selection, content)[0],
+      })
+      .then(({ error, formatted, cursorOffset }) => {
+        if (error) {
+          return;
+        }
+
+        this.setState({
+          content: formatted,
+          selection: util.convertOffsetToSelection(cursorOffset, formatted),
+        });
+      });
+  }
+
+  insertDummyId() {
+    const { content, selection } = this.state;
+    const dummyId = generateDummyId();
+    const range = util.convertSelectionToRange(selection, content);
+    const modifiedContent =
+      content.slice(0, range[0]) + dummyId + content.slice(range[1]);
+
+    this.setState({
+      content: modifiedContent,
+      selection: util.convertOffsetToSelection(
+        range[0] + dummyId.length,
+        modifiedContent
+      ),
+    });
+  }
+
+  render() {
+    const { worker } = this.props;
+    const { content, options } = this.state;
 
     return (
       <EditorState>
         {(editorState) => (
           <PrettierFormat
+            enabled={!this.state.needsClickForFirstRun}
             worker={worker}
             code={content}
             options={options}
             debugAst={editorState.showAst}
+            debugPreprocessedAst={editorState.showPreprocessedAst}
             debugDoc={editorState.showDoc}
-            debugComments={showShowComments && editorState.showComments}
+            debugComments={editorState.showComments}
             reformat={editorState.showSecondFormat}
+            rethrowEmbedErrors={editorState.rethrowEmbedErrors}
           >
             {({ formatted, debug }) => {
               const fullReport = this.getMarkdown({
@@ -238,17 +305,20 @@ class Playground extends React.Component {
                           onChange={editorState.toggleAst}
                         />
                         <Checkbox
+                          label="show preprocessed AST"
+                          checked={editorState.showPreprocessedAst}
+                          onChange={editorState.togglePreprocessedAst}
+                        />
+                        <Checkbox
                           label="show doc"
                           checked={editorState.showDoc}
                           onChange={editorState.toggleDoc}
                         />
-                        {showShowComments && (
-                          <Checkbox
-                            label="show comments"
-                            checked={editorState.showComments}
-                            onChange={editorState.toggleComments}
-                          />
-                        )}
+                        <Checkbox
+                          label="show comments"
+                          checked={editorState.showComments}
+                          onChange={editorState.toggleComments}
+                        />
                         <Checkbox
                           label="show output"
                           checked={editorState.showOutput}
@@ -259,9 +329,15 @@ class Playground extends React.Component {
                           checked={editorState.showSecondFormat}
                           onChange={editorState.toggleSecondFormat}
                         />
-                        {editorState.showDoc && debug.doc && (
+                        <Checkbox
+                          label="rethrow embed errors"
+                          checked={editorState.rethrowEmbedErrors}
+                          onChange={editorState.toggleEmbedErrors}
+                        />
+                        {editorState.showDoc && (
                           <ClipboardButton
                             copy={() => this.getMarkdown({ doc: debug.doc })}
+                            disabled={!debug.doc}
                           >
                             Copy doc
                           </ClipboardButton>
@@ -279,11 +355,17 @@ class Playground extends React.Component {
                           mode={util.getCodemirrorMode(options.parser)}
                           ruler={options.printWidth}
                           value={content}
+                          selection={this.state.selection}
                           codeSample={getCodeSample(options.parser)}
                           overlayStart={options.rangeStart}
                           overlayEnd={options.rangeEnd}
                           onChange={this.setContent}
                           onSelectionChange={this.setSelection}
+                          extraKeys={{
+                            "Shift-Alt-F": this.formatInput,
+                            "Ctrl-Q": this.insertDummyId,
+                          }}
+                          foldGutter={options.parser === "doc-explorer"}
                         />
                       ) : null}
                       {editorState.showAst ? (
@@ -292,21 +374,52 @@ class Playground extends React.Component {
                           autoFold={util.getAstAutoFold(options.parser)}
                         />
                       ) : null}
+                      {editorState.showPreprocessedAst ? (
+                        <DebugPanel
+                          value={debug.preprocessedAst || ""}
+                          autoFold={util.getAstAutoFold(options.parser)}
+                        />
+                      ) : null}
                       {editorState.showDoc ? (
                         <DebugPanel value={debug.doc || ""} />
                       ) : null}
-                      {showShowComments && editorState.showComments ? (
+                      {editorState.showComments ? (
                         <DebugPanel
                           value={debug.comments || ""}
                           autoFold={util.getAstAutoFold(options.parser)}
                         />
                       ) : null}
                       {editorState.showOutput ? (
-                        <OutputPanel
-                          mode={util.getCodemirrorMode(options.parser)}
-                          value={formatted}
-                          ruler={options.printWidth}
-                        />
+                        this.state.needsClickForFirstRun ? (
+                          <div className="editor disabled-output-panel">
+                            <div className="explanation">
+                              <code>doc-explorer</code> involves running code
+                              provided by users.
+                            </div>
+                            <div className="explanation">
+                              To stay on the safe side and prevent abuse, an
+                              explicit user action is required when a direct
+                              link to a <code>doc-explorer</code> playground is
+                              opened.
+                            </div>
+                            <div className="explanation">
+                              Click the button below to start the playground.
+                            </div>
+                            <Button
+                              onClick={() =>
+                                this.setState({ needsClickForFirstRun: false })
+                              }
+                            >
+                              Start
+                            </Button>
+                          </div>
+                        ) : (
+                          <OutputPanel
+                            mode={util.getCodemirrorMode(options.parser)}
+                            value={formatted}
+                            ruler={options.printWidth}
+                          />
+                        )
                       ) : null}
                       {editorState.showSecondFormat ? (
                         <OutputPanel
@@ -337,6 +450,13 @@ class Playground extends React.Component {
                       >
                         Copy config JSON
                       </ClipboardButton>
+                      <Button
+                        onClick={this.insertDummyId}
+                        onMouseDown={(event) => event.preventDefault()} // prevent button from focusing
+                        title="Generate a nonsense variable name (Ctrl-Q)"
+                      >
+                        Insert dummy id
+                      </Button>
                     </div>
                     <div className="bottom-bar-buttons bottom-bar-buttons-right">
                       <ClipboardButton copy={window.location.href}>

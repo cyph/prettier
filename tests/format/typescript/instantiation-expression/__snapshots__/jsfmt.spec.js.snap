@@ -26,7 +26,8 @@ new A < B >
 C
 
 =====================================output=====================================
-new A() < B > C;
+new A<B>();
+C;
 
 ================================================================================
 `;
@@ -53,6 +54,39 @@ interface Example {
 ================================================================================
 `;
 
+exports[`logical-expr.ts format 1`] = `
+====================================options=====================================
+parsers: ["typescript"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+export class Foo<T> {
+  message: string;
+}
+
+function sample(error: unknown) {
+  if (!(error instanceof Foo<'some-type'> || error instanceof Error) || !error.message) {
+    return 'something';
+  }
+}
+
+=====================================output=====================================
+export class Foo<T> {
+  message: string;
+}
+
+function sample(error: unknown) {
+  if (
+    !(error instanceof Foo<"some-type"> || error instanceof Error) ||
+    !error.message
+  ) {
+    return "something";
+  }
+}
+
+================================================================================
+`;
+
 exports[`new.ts format 1`] = `
 ====================================options=====================================
 parsers: ["typescript"]
@@ -65,6 +99,46 @@ new A<T>;
 =====================================output=====================================
 // new
 new A<T>();
+
+================================================================================
+`;
+
+exports[`property-access.ts format 1`] = `
+====================================options=====================================
+parsers: ["typescript"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+(Array<string>).name;
+(fn1<string>).bind(obj);
+(fn2<string, number>).bind(obj);
+a[(Array<string>)];
+a[(Array<string>).name];
+(Array<string>).a;
+(Array<string>)?.a;
+(Array<string>)[a];
+(Array<string>)?.[a];
+(Array<string>)["a"];
+(Array<string>)?.["a"];
+(Array<string>)[\`a\`];
+(Array<string>)?.[\`a\`];
+(Array<string>)[(Array<string>)];
+
+=====================================output=====================================
+(Array<string>).name;
+(fn1<string>).bind(obj);
+(fn2<string, number>).bind(obj);
+a[Array<string>];
+a[(Array<string>).name];
+(Array<string>).a;
+(Array<string>)?.a;
+(Array<string>)[a];
+(Array<string>)?.[a];
+(Array<string>)["a"];
+(Array<string>)?.["a"];
+(Array<string>)[\`a\`];
+(Array<string>)?.[\`a\`];
+(Array<string>)[Array<string>];
 
 ================================================================================
 `;

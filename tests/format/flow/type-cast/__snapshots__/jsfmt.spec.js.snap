@@ -1,8 +1,26 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`argument-expansion.js format 1`] = `
+====================================options=====================================
+parsers: ["flow"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+const bar1 = [1,2,3].reduce((carry, value) => {
+  return [...carry, value];
+}, ([]: Array<string>));
+
+=====================================output=====================================
+const bar1 = [1, 2, 3].reduce((carry, value) => {
+  return [...carry, value];
+}, ([]: Array<string>));
+
+================================================================================
+`;
+
 exports[`expression.js format 1`] = `
 ====================================options=====================================
-parsers: ["flow", "babel"]
+parsers: ["flow"]
 printWidth: 80
                                                                                 | printWidth
 =====================================input======================================
@@ -22,7 +40,7 @@ const foo = ((1 ? 2 : 3): number);
 
 exports[`statement.js format 1`] = `
 ====================================options=====================================
-parsers: ["flow", "babel"]
+parsers: ["flow"]
 printWidth: 80
                                                                                 | printWidth
 =====================================input======================================

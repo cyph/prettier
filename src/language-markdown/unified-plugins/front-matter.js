@@ -1,8 +1,9 @@
-"use strict";
+import parseFrontMatter from "../../utils/front-matter/parse.js";
 
-const parseFrontMatter = require("../../utils/front-matter/parse.js");
-
-function frontMatter() {
+/**
+ * @type {import('unified').Plugin<[], import('unified').Settings>}
+ */
+const frontMatter = function () {
   const proto = this.Parser.prototype;
   proto.blockMethods = ["frontMatter", ...proto.blockMethods];
   proto.blockTokenizers.frontMatter = tokenizer;
@@ -15,6 +16,6 @@ function frontMatter() {
     }
   }
   tokenizer.onlyAtStart = true;
-}
+};
 
-module.exports = frontMatter;
+export default frontMatter;

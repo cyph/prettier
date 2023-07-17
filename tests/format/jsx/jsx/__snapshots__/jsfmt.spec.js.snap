@@ -312,6 +312,374 @@ const TodoList = ({ todos }) => (
 ================================================================================
 `;
 
+exports[`arrow.js - {"singleQuote":false,"jsxSingleQuote":false} format 1`] = `
+====================================options=====================================
+jsxSingleQuote: false
+parsers: ["flow", "babel", "typescript"]
+printWidth: 80
+singleQuote: false
+                                                                                | printWidth
+=====================================input======================================
+() => <Component><Children/></Component>;
+() => () => <Component><Children/></Component>;
+() => () => () => <Component><Children/></Component>;
+
+() => <div>Some text here</div>;
+() => () => <div>Some text here</div>;
+() => () => () => <div>Some text here</div>;
+
+() => <div>Long long long long long, very very long text. And more text. Another text.</div>;
+() => () => <div>Long long long long long, very very long text. And more text. Another text.</div>;
+() => () => () => <div>Long long long long long, very very long text. And more text. Another text.</div>;
+
+<Prettier>
+  {We => 'The purple monkey danced with a tambourine made of cheese.' + 'The robot chef cooked a cake that tasted like rainbows.' + 'The talking pineapple sang a lullaby to the sleepy giraffe.'}
+</Prettier>;
+<Prettier>
+  {We => love => 'The purple monkey danced with a tambourine made of cheese.' + 'The robot chef cooked a cake that tasted like rainbows.' + 'The talking pineapple sang a lullaby to the sleepy giraffe.'}
+</Prettier>;
+<Prettier>
+  {We => love => currying => 'The purple monkey danced with a tambourine made of cheese.' + 'The robot chef cooked a cake that tasted like rainbows.' + 'The talking pineapple sang a lullaby to the sleepy giraffe.'}
+</Prettier>;
+
+=====================================output=====================================
+() => (
+  <Component>
+    <Children />
+  </Component>
+);
+() => () => (
+  <Component>
+    <Children />
+  </Component>
+);
+() => () => () => (
+  <Component>
+    <Children />
+  </Component>
+);
+
+() => <div>Some text here</div>;
+() => () => <div>Some text here</div>;
+() => () => () => <div>Some text here</div>;
+
+() => (
+  <div>
+    Long long long long long, very very long text. And more text. Another text.
+  </div>
+);
+() => () => (
+  <div>
+    Long long long long long, very very long text. And more text. Another text.
+  </div>
+);
+() => () => () => (
+  <div>
+    Long long long long long, very very long text. And more text. Another text.
+  </div>
+);
+
+<Prettier>
+  {(We) =>
+    "The purple monkey danced with a tambourine made of cheese." +
+    "The robot chef cooked a cake that tasted like rainbows." +
+    "The talking pineapple sang a lullaby to the sleepy giraffe."
+  }
+</Prettier>;
+<Prettier>
+  {(We) => (love) =>
+    "The purple monkey danced with a tambourine made of cheese." +
+    "The robot chef cooked a cake that tasted like rainbows." +
+    "The talking pineapple sang a lullaby to the sleepy giraffe."
+  }
+</Prettier>;
+<Prettier>
+  {(We) => (love) => (currying) =>
+    "The purple monkey danced with a tambourine made of cheese." +
+    "The robot chef cooked a cake that tasted like rainbows." +
+    "The talking pineapple sang a lullaby to the sleepy giraffe."
+  }
+</Prettier>;
+
+================================================================================
+`;
+
+exports[`arrow.js - {"singleQuote":false,"jsxSingleQuote":true} format 1`] = `
+====================================options=====================================
+jsxSingleQuote: true
+parsers: ["flow", "babel", "typescript"]
+printWidth: 80
+singleQuote: false
+                                                                                | printWidth
+=====================================input======================================
+() => <Component><Children/></Component>;
+() => () => <Component><Children/></Component>;
+() => () => () => <Component><Children/></Component>;
+
+() => <div>Some text here</div>;
+() => () => <div>Some text here</div>;
+() => () => () => <div>Some text here</div>;
+
+() => <div>Long long long long long, very very long text. And more text. Another text.</div>;
+() => () => <div>Long long long long long, very very long text. And more text. Another text.</div>;
+() => () => () => <div>Long long long long long, very very long text. And more text. Another text.</div>;
+
+<Prettier>
+  {We => 'The purple monkey danced with a tambourine made of cheese.' + 'The robot chef cooked a cake that tasted like rainbows.' + 'The talking pineapple sang a lullaby to the sleepy giraffe.'}
+</Prettier>;
+<Prettier>
+  {We => love => 'The purple monkey danced with a tambourine made of cheese.' + 'The robot chef cooked a cake that tasted like rainbows.' + 'The talking pineapple sang a lullaby to the sleepy giraffe.'}
+</Prettier>;
+<Prettier>
+  {We => love => currying => 'The purple monkey danced with a tambourine made of cheese.' + 'The robot chef cooked a cake that tasted like rainbows.' + 'The talking pineapple sang a lullaby to the sleepy giraffe.'}
+</Prettier>;
+
+=====================================output=====================================
+() => (
+  <Component>
+    <Children />
+  </Component>
+);
+() => () => (
+  <Component>
+    <Children />
+  </Component>
+);
+() => () => () => (
+  <Component>
+    <Children />
+  </Component>
+);
+
+() => <div>Some text here</div>;
+() => () => <div>Some text here</div>;
+() => () => () => <div>Some text here</div>;
+
+() => (
+  <div>
+    Long long long long long, very very long text. And more text. Another text.
+  </div>
+);
+() => () => (
+  <div>
+    Long long long long long, very very long text. And more text. Another text.
+  </div>
+);
+() => () => () => (
+  <div>
+    Long long long long long, very very long text. And more text. Another text.
+  </div>
+);
+
+<Prettier>
+  {(We) =>
+    "The purple monkey danced with a tambourine made of cheese." +
+    "The robot chef cooked a cake that tasted like rainbows." +
+    "The talking pineapple sang a lullaby to the sleepy giraffe."
+  }
+</Prettier>;
+<Prettier>
+  {(We) => (love) =>
+    "The purple monkey danced with a tambourine made of cheese." +
+    "The robot chef cooked a cake that tasted like rainbows." +
+    "The talking pineapple sang a lullaby to the sleepy giraffe."
+  }
+</Prettier>;
+<Prettier>
+  {(We) => (love) => (currying) =>
+    "The purple monkey danced with a tambourine made of cheese." +
+    "The robot chef cooked a cake that tasted like rainbows." +
+    "The talking pineapple sang a lullaby to the sleepy giraffe."
+  }
+</Prettier>;
+
+================================================================================
+`;
+
+exports[`arrow.js - {"singleQuote":true,"jsxSingleQuote":false} format 1`] = `
+====================================options=====================================
+jsxSingleQuote: false
+parsers: ["flow", "babel", "typescript"]
+printWidth: 80
+singleQuote: true
+                                                                                | printWidth
+=====================================input======================================
+() => <Component><Children/></Component>;
+() => () => <Component><Children/></Component>;
+() => () => () => <Component><Children/></Component>;
+
+() => <div>Some text here</div>;
+() => () => <div>Some text here</div>;
+() => () => () => <div>Some text here</div>;
+
+() => <div>Long long long long long, very very long text. And more text. Another text.</div>;
+() => () => <div>Long long long long long, very very long text. And more text. Another text.</div>;
+() => () => () => <div>Long long long long long, very very long text. And more text. Another text.</div>;
+
+<Prettier>
+  {We => 'The purple monkey danced with a tambourine made of cheese.' + 'The robot chef cooked a cake that tasted like rainbows.' + 'The talking pineapple sang a lullaby to the sleepy giraffe.'}
+</Prettier>;
+<Prettier>
+  {We => love => 'The purple monkey danced with a tambourine made of cheese.' + 'The robot chef cooked a cake that tasted like rainbows.' + 'The talking pineapple sang a lullaby to the sleepy giraffe.'}
+</Prettier>;
+<Prettier>
+  {We => love => currying => 'The purple monkey danced with a tambourine made of cheese.' + 'The robot chef cooked a cake that tasted like rainbows.' + 'The talking pineapple sang a lullaby to the sleepy giraffe.'}
+</Prettier>;
+
+=====================================output=====================================
+() => (
+  <Component>
+    <Children />
+  </Component>
+);
+() => () => (
+  <Component>
+    <Children />
+  </Component>
+);
+() => () => () => (
+  <Component>
+    <Children />
+  </Component>
+);
+
+() => <div>Some text here</div>;
+() => () => <div>Some text here</div>;
+() => () => () => <div>Some text here</div>;
+
+() => (
+  <div>
+    Long long long long long, very very long text. And more text. Another text.
+  </div>
+);
+() => () => (
+  <div>
+    Long long long long long, very very long text. And more text. Another text.
+  </div>
+);
+() => () => () => (
+  <div>
+    Long long long long long, very very long text. And more text. Another text.
+  </div>
+);
+
+<Prettier>
+  {(We) =>
+    'The purple monkey danced with a tambourine made of cheese.' +
+    'The robot chef cooked a cake that tasted like rainbows.' +
+    'The talking pineapple sang a lullaby to the sleepy giraffe.'
+  }
+</Prettier>;
+<Prettier>
+  {(We) => (love) =>
+    'The purple monkey danced with a tambourine made of cheese.' +
+    'The robot chef cooked a cake that tasted like rainbows.' +
+    'The talking pineapple sang a lullaby to the sleepy giraffe.'
+  }
+</Prettier>;
+<Prettier>
+  {(We) => (love) => (currying) =>
+    'The purple monkey danced with a tambourine made of cheese.' +
+    'The robot chef cooked a cake that tasted like rainbows.' +
+    'The talking pineapple sang a lullaby to the sleepy giraffe.'
+  }
+</Prettier>;
+
+================================================================================
+`;
+
+exports[`arrow.js - {"singleQuote":true,"jsxSingleQuote":true} format 1`] = `
+====================================options=====================================
+jsxSingleQuote: true
+parsers: ["flow", "babel", "typescript"]
+printWidth: 80
+singleQuote: true
+                                                                                | printWidth
+=====================================input======================================
+() => <Component><Children/></Component>;
+() => () => <Component><Children/></Component>;
+() => () => () => <Component><Children/></Component>;
+
+() => <div>Some text here</div>;
+() => () => <div>Some text here</div>;
+() => () => () => <div>Some text here</div>;
+
+() => <div>Long long long long long, very very long text. And more text. Another text.</div>;
+() => () => <div>Long long long long long, very very long text. And more text. Another text.</div>;
+() => () => () => <div>Long long long long long, very very long text. And more text. Another text.</div>;
+
+<Prettier>
+  {We => 'The purple monkey danced with a tambourine made of cheese.' + 'The robot chef cooked a cake that tasted like rainbows.' + 'The talking pineapple sang a lullaby to the sleepy giraffe.'}
+</Prettier>;
+<Prettier>
+  {We => love => 'The purple monkey danced with a tambourine made of cheese.' + 'The robot chef cooked a cake that tasted like rainbows.' + 'The talking pineapple sang a lullaby to the sleepy giraffe.'}
+</Prettier>;
+<Prettier>
+  {We => love => currying => 'The purple monkey danced with a tambourine made of cheese.' + 'The robot chef cooked a cake that tasted like rainbows.' + 'The talking pineapple sang a lullaby to the sleepy giraffe.'}
+</Prettier>;
+
+=====================================output=====================================
+() => (
+  <Component>
+    <Children />
+  </Component>
+);
+() => () => (
+  <Component>
+    <Children />
+  </Component>
+);
+() => () => () => (
+  <Component>
+    <Children />
+  </Component>
+);
+
+() => <div>Some text here</div>;
+() => () => <div>Some text here</div>;
+() => () => () => <div>Some text here</div>;
+
+() => (
+  <div>
+    Long long long long long, very very long text. And more text. Another text.
+  </div>
+);
+() => () => (
+  <div>
+    Long long long long long, very very long text. And more text. Another text.
+  </div>
+);
+() => () => () => (
+  <div>
+    Long long long long long, very very long text. And more text. Another text.
+  </div>
+);
+
+<Prettier>
+  {(We) =>
+    'The purple monkey danced with a tambourine made of cheese.' +
+    'The robot chef cooked a cake that tasted like rainbows.' +
+    'The talking pineapple sang a lullaby to the sleepy giraffe.'
+  }
+</Prettier>;
+<Prettier>
+  {(We) => (love) =>
+    'The purple monkey danced with a tambourine made of cheese.' +
+    'The robot chef cooked a cake that tasted like rainbows.' +
+    'The talking pineapple sang a lullaby to the sleepy giraffe.'
+  }
+</Prettier>;
+<Prettier>
+  {(We) => (love) => (currying) =>
+    'The purple monkey danced with a tambourine made of cheese.' +
+    'The robot chef cooked a cake that tasted like rainbows.' +
+    'The talking pineapple sang a lullaby to the sleepy giraffe.'
+  }
+</Prettier>;
+
+================================================================================
+`;
+
 exports[`attr-comments.js - {"singleQuote":false,"jsxSingleQuote":false} format 1`] = `
 ====================================options=====================================
 jsxSingleQuote: false
@@ -677,7 +1045,7 @@ async function testFunction() {
   const long = (
     <>
       {await Promise.all(
-        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter
+        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter,
       )}
       {
         await hierarchyCriticism.IncongruousCooperate.MaterialEducation
@@ -688,7 +1056,7 @@ async function testFunction() {
       }
 
       {Promise.all(
-        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter
+        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter,
       )}
       {
         hierarchyCriticism.IncongruousCooperate.MaterialEducation
@@ -775,7 +1143,7 @@ async function testFunction() {
   const long = (
     <>
       {await Promise.all(
-        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter
+        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter,
       )}
       {
         await hierarchyCriticism.IncongruousCooperate.MaterialEducation
@@ -786,7 +1154,7 @@ async function testFunction() {
       }
 
       {Promise.all(
-        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter
+        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter,
       )}
       {
         hierarchyCriticism.IncongruousCooperate.MaterialEducation
@@ -873,7 +1241,7 @@ async function testFunction() {
   const long = (
     <>
       {await Promise.all(
-        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter
+        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter,
       )}
       {
         await hierarchyCriticism.IncongruousCooperate.MaterialEducation
@@ -884,7 +1252,7 @@ async function testFunction() {
       }
 
       {Promise.all(
-        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter
+        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter,
       )}
       {
         hierarchyCriticism.IncongruousCooperate.MaterialEducation
@@ -971,7 +1339,7 @@ async function testFunction() {
   const long = (
     <>
       {await Promise.all(
-        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter
+        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter,
       )}
       {
         await hierarchyCriticism.IncongruousCooperate.MaterialEducation
@@ -982,7 +1350,7 @@ async function testFunction() {
       }
 
       {Promise.all(
-        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter
+        hierarchyCriticismIncongruousCooperateMaterialEducationOriginalArticulateParameter,
       )}
       {
         hierarchyCriticism.IncongruousCooperate.MaterialEducation
@@ -1100,6 +1468,13 @@ jsxModeFromElementBreaking ? (
 // non-breaking.
 <div>
   {a ? "a" : b ? "b" : "c"}
+</div>;
+
+// This chain of ConditionalExpressions prints in JSX mode because the parent of
+// the outermost ConditionalExpression is a JSXExpressionContainer. It is
+// breaking.
+<div>
+  {thisIsASongAboutYourPoorSickPenguinHeHasAFeverAndHisToesAreBlueButIfISingToYourPoorSickPenguinHeWillFeelBetterInADayOrTwo ? "a" : b ? "b" : "c"}
 </div>;
 
 // This chain of ConditionalExpressions prints in JSX mode because there is a
@@ -1242,6 +1617,17 @@ jsxModeFromElementBreaking ? (
 // the outermost ConditionalExpression is a JSXExpressionContainer. It is
 // non-breaking.
 <div>{a ? "a" : b ? "b" : "c"}</div>;
+
+// This chain of ConditionalExpressions prints in JSX mode because the parent of
+// the outermost ConditionalExpression is a JSXExpressionContainer. It is
+// breaking.
+<div>
+  {thisIsASongAboutYourPoorSickPenguinHeHasAFeverAndHisToesAreBlueButIfISingToYourPoorSickPenguinHeWillFeelBetterInADayOrTwo
+    ? "a"
+    : b
+    ? "b"
+    : "c"}
+</div>;
 
 // This chain of ConditionalExpressions prints in JSX mode because there is a
 // JSX element somewhere in the chain. It is non-breaking.
@@ -1401,6 +1787,13 @@ jsxModeFromElementBreaking ? (
   {a ? "a" : b ? "b" : "c"}
 </div>;
 
+// This chain of ConditionalExpressions prints in JSX mode because the parent of
+// the outermost ConditionalExpression is a JSXExpressionContainer. It is
+// breaking.
+<div>
+  {thisIsASongAboutYourPoorSickPenguinHeHasAFeverAndHisToesAreBlueButIfISingToYourPoorSickPenguinHeWillFeelBetterInADayOrTwo ? "a" : b ? "b" : "c"}
+</div>;
+
 // This chain of ConditionalExpressions prints in JSX mode because there is a
 // JSX element somewhere in the chain. It is non-breaking.
 cable ? "satellite" : isPublic ? "affairs" : network ? <span id="c" /> : "dun";
@@ -1541,6 +1934,17 @@ jsxModeFromElementBreaking ? (
 // the outermost ConditionalExpression is a JSXExpressionContainer. It is
 // non-breaking.
 <div>{a ? "a" : b ? "b" : "c"}</div>;
+
+// This chain of ConditionalExpressions prints in JSX mode because the parent of
+// the outermost ConditionalExpression is a JSXExpressionContainer. It is
+// breaking.
+<div>
+  {thisIsASongAboutYourPoorSickPenguinHeHasAFeverAndHisToesAreBlueButIfISingToYourPoorSickPenguinHeWillFeelBetterInADayOrTwo
+    ? "a"
+    : b
+    ? "b"
+    : "c"}
+</div>;
 
 // This chain of ConditionalExpressions prints in JSX mode because there is a
 // JSX element somewhere in the chain. It is non-breaking.
@@ -1700,6 +2104,13 @@ jsxModeFromElementBreaking ? (
   {a ? "a" : b ? "b" : "c"}
 </div>;
 
+// This chain of ConditionalExpressions prints in JSX mode because the parent of
+// the outermost ConditionalExpression is a JSXExpressionContainer. It is
+// breaking.
+<div>
+  {thisIsASongAboutYourPoorSickPenguinHeHasAFeverAndHisToesAreBlueButIfISingToYourPoorSickPenguinHeWillFeelBetterInADayOrTwo ? "a" : b ? "b" : "c"}
+</div>;
+
 // This chain of ConditionalExpressions prints in JSX mode because there is a
 // JSX element somewhere in the chain. It is non-breaking.
 cable ? "satellite" : isPublic ? "affairs" : network ? <span id="c" /> : "dun";
@@ -1840,6 +2251,17 @@ jsxModeFromElementBreaking ? (
 // the outermost ConditionalExpression is a JSXExpressionContainer. It is
 // non-breaking.
 <div>{a ? 'a' : b ? 'b' : 'c'}</div>;
+
+// This chain of ConditionalExpressions prints in JSX mode because the parent of
+// the outermost ConditionalExpression is a JSXExpressionContainer. It is
+// breaking.
+<div>
+  {thisIsASongAboutYourPoorSickPenguinHeHasAFeverAndHisToesAreBlueButIfISingToYourPoorSickPenguinHeWillFeelBetterInADayOrTwo
+    ? 'a'
+    : b
+    ? 'b'
+    : 'c'}
+</div>;
 
 // This chain of ConditionalExpressions prints in JSX mode because there is a
 // JSX element somewhere in the chain. It is non-breaking.
@@ -1999,6 +2421,13 @@ jsxModeFromElementBreaking ? (
   {a ? "a" : b ? "b" : "c"}
 </div>;
 
+// This chain of ConditionalExpressions prints in JSX mode because the parent of
+// the outermost ConditionalExpression is a JSXExpressionContainer. It is
+// breaking.
+<div>
+  {thisIsASongAboutYourPoorSickPenguinHeHasAFeverAndHisToesAreBlueButIfISingToYourPoorSickPenguinHeWillFeelBetterInADayOrTwo ? "a" : b ? "b" : "c"}
+</div>;
+
 // This chain of ConditionalExpressions prints in JSX mode because there is a
 // JSX element somewhere in the chain. It is non-breaking.
 cable ? "satellite" : isPublic ? "affairs" : network ? <span id="c" /> : "dun";
@@ -2139,6 +2568,17 @@ jsxModeFromElementBreaking ? (
 // the outermost ConditionalExpression is a JSXExpressionContainer. It is
 // non-breaking.
 <div>{a ? 'a' : b ? 'b' : 'c'}</div>;
+
+// This chain of ConditionalExpressions prints in JSX mode because the parent of
+// the outermost ConditionalExpression is a JSXExpressionContainer. It is
+// breaking.
+<div>
+  {thisIsASongAboutYourPoorSickPenguinHeHasAFeverAndHisToesAreBlueButIfISingToYourPoorSickPenguinHeWillFeelBetterInADayOrTwo
+    ? 'a'
+    : b
+    ? 'b'
+    : 'c'}
+</div>;
 
 // This chain of ConditionalExpressions prints in JSX mode because there is a
 // JSX element somewhere in the chain. It is non-breaking.
@@ -2296,17 +2736,6 @@ singleQuote: false
   }}
 />;
 
-<Component
-  onChange={(
-    key: "possible_key_1" | "possible_key_2" | "possible_key_3",
-    value: string | Immutable.List<string>,
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value)
-    });
-  }}
-/>;
-
 <BookingIntroPanel>
   {data => doLogClick("short", "short", data)}
 </BookingIntroPanel>;
@@ -2322,17 +2751,6 @@ singleQuote: false
     doLogClick("long_name_long_name_long_name", "long_name_long_name_long_name", data)
   }}
 </BookingIntroPanel>;
-
-<Component>
-  {(
-    key: "possible_key_1" | "possible_key_2" | "possible_key_3",
-    value: string | Immutable.List<string>,
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value)
-    });
-  }}
-</Component>;
 
 <SuspendyTree>
   <div style={{ height: 200, overflow: "scroll" }}>
@@ -2418,7 +2836,7 @@ singleQuote: false
     doLogClick(
       "long_name_long_name_long_name",
       "long_name_long_name_long_name",
-      data
+      data,
     )
   }
 />;
@@ -2428,19 +2846,8 @@ singleQuote: false
     doLogClick(
       "long_name_long_name_long_name",
       "long_name_long_name_long_name",
-      data
+      data,
     );
-  }}
-/>;
-
-<Component
-  onChange={(
-    key: "possible_key_1" | "possible_key_2" | "possible_key_3",
-    value: string | Immutable.List<string>
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value),
-    });
   }}
 />;
 
@@ -2453,7 +2860,7 @@ singleQuote: false
     doLogClick(
       "long_name_long_name_long_name",
       "long_name_long_name_long_name",
-      data
+      data,
     )
   }
 </BookingIntroPanel>;
@@ -2463,21 +2870,10 @@ singleQuote: false
     doLogClick(
       "long_name_long_name_long_name",
       "long_name_long_name_long_name",
-      data
+      data,
     );
   }}
 </BookingIntroPanel>;
-
-<Component>
-  {(
-    key: "possible_key_1" | "possible_key_2" | "possible_key_3",
-    value: string | Immutable.List<string>
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value),
-    });
-  }}
-</Component>;
 
 <SuspendyTree>
   <div style={{ height: 200, overflow: "scroll" }}>
@@ -2584,17 +2980,6 @@ singleQuote: false
   }}
 />;
 
-<Component
-  onChange={(
-    key: "possible_key_1" | "possible_key_2" | "possible_key_3",
-    value: string | Immutable.List<string>,
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value)
-    });
-  }}
-/>;
-
 <BookingIntroPanel>
   {data => doLogClick("short", "short", data)}
 </BookingIntroPanel>;
@@ -2610,17 +2995,6 @@ singleQuote: false
     doLogClick("long_name_long_name_long_name", "long_name_long_name_long_name", data)
   }}
 </BookingIntroPanel>;
-
-<Component>
-  {(
-    key: "possible_key_1" | "possible_key_2" | "possible_key_3",
-    value: string | Immutable.List<string>,
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value)
-    });
-  }}
-</Component>;
 
 <SuspendyTree>
   <div style={{ height: 200, overflow: "scroll" }}>
@@ -2706,7 +3080,7 @@ singleQuote: false
     doLogClick(
       "long_name_long_name_long_name",
       "long_name_long_name_long_name",
-      data
+      data,
     )
   }
 />;
@@ -2716,19 +3090,8 @@ singleQuote: false
     doLogClick(
       "long_name_long_name_long_name",
       "long_name_long_name_long_name",
-      data
+      data,
     );
-  }}
-/>;
-
-<Component
-  onChange={(
-    key: "possible_key_1" | "possible_key_2" | "possible_key_3",
-    value: string | Immutable.List<string>
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value),
-    });
   }}
 />;
 
@@ -2741,7 +3104,7 @@ singleQuote: false
     doLogClick(
       "long_name_long_name_long_name",
       "long_name_long_name_long_name",
-      data
+      data,
     )
   }
 </BookingIntroPanel>;
@@ -2751,21 +3114,10 @@ singleQuote: false
     doLogClick(
       "long_name_long_name_long_name",
       "long_name_long_name_long_name",
-      data
+      data,
     );
   }}
 </BookingIntroPanel>;
-
-<Component>
-  {(
-    key: "possible_key_1" | "possible_key_2" | "possible_key_3",
-    value: string | Immutable.List<string>
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value),
-    });
-  }}
-</Component>;
 
 <SuspendyTree>
   <div style={{ height: 200, overflow: "scroll" }}>
@@ -2872,17 +3224,6 @@ singleQuote: true
   }}
 />;
 
-<Component
-  onChange={(
-    key: "possible_key_1" | "possible_key_2" | "possible_key_3",
-    value: string | Immutable.List<string>,
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value)
-    });
-  }}
-/>;
-
 <BookingIntroPanel>
   {data => doLogClick("short", "short", data)}
 </BookingIntroPanel>;
@@ -2898,17 +3239,6 @@ singleQuote: true
     doLogClick("long_name_long_name_long_name", "long_name_long_name_long_name", data)
   }}
 </BookingIntroPanel>;
-
-<Component>
-  {(
-    key: "possible_key_1" | "possible_key_2" | "possible_key_3",
-    value: string | Immutable.List<string>,
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value)
-    });
-  }}
-</Component>;
 
 <SuspendyTree>
   <div style={{ height: 200, overflow: "scroll" }}>
@@ -2994,7 +3324,7 @@ singleQuote: true
     doLogClick(
       'long_name_long_name_long_name',
       'long_name_long_name_long_name',
-      data
+      data,
     )
   }
 />;
@@ -3004,19 +3334,8 @@ singleQuote: true
     doLogClick(
       'long_name_long_name_long_name',
       'long_name_long_name_long_name',
-      data
+      data,
     );
-  }}
-/>;
-
-<Component
-  onChange={(
-    key: 'possible_key_1' | 'possible_key_2' | 'possible_key_3',
-    value: string | Immutable.List<string>
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value),
-    });
   }}
 />;
 
@@ -3029,7 +3348,7 @@ singleQuote: true
     doLogClick(
       'long_name_long_name_long_name',
       'long_name_long_name_long_name',
-      data
+      data,
     )
   }
 </BookingIntroPanel>;
@@ -3039,21 +3358,10 @@ singleQuote: true
     doLogClick(
       'long_name_long_name_long_name',
       'long_name_long_name_long_name',
-      data
+      data,
     );
   }}
 </BookingIntroPanel>;
-
-<Component>
-  {(
-    key: 'possible_key_1' | 'possible_key_2' | 'possible_key_3',
-    value: string | Immutable.List<string>
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value),
-    });
-  }}
-</Component>;
 
 <SuspendyTree>
   <div style={{ height: 200, overflow: 'scroll' }}>
@@ -3160,17 +3468,6 @@ singleQuote: true
   }}
 />;
 
-<Component
-  onChange={(
-    key: "possible_key_1" | "possible_key_2" | "possible_key_3",
-    value: string | Immutable.List<string>,
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value)
-    });
-  }}
-/>;
-
 <BookingIntroPanel>
   {data => doLogClick("short", "short", data)}
 </BookingIntroPanel>;
@@ -3186,17 +3483,6 @@ singleQuote: true
     doLogClick("long_name_long_name_long_name", "long_name_long_name_long_name", data)
   }}
 </BookingIntroPanel>;
-
-<Component>
-  {(
-    key: "possible_key_1" | "possible_key_2" | "possible_key_3",
-    value: string | Immutable.List<string>,
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value)
-    });
-  }}
-</Component>;
 
 <SuspendyTree>
   <div style={{ height: 200, overflow: "scroll" }}>
@@ -3282,7 +3568,7 @@ singleQuote: true
     doLogClick(
       'long_name_long_name_long_name',
       'long_name_long_name_long_name',
-      data
+      data,
     )
   }
 />;
@@ -3292,19 +3578,8 @@ singleQuote: true
     doLogClick(
       'long_name_long_name_long_name',
       'long_name_long_name_long_name',
-      data
+      data,
     );
-  }}
-/>;
-
-<Component
-  onChange={(
-    key: 'possible_key_1' | 'possible_key_2' | 'possible_key_3',
-    value: string | Immutable.List<string>
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value),
-    });
   }}
 />;
 
@@ -3317,7 +3592,7 @@ singleQuote: true
     doLogClick(
       'long_name_long_name_long_name',
       'long_name_long_name_long_name',
-      data
+      data,
     )
   }
 </BookingIntroPanel>;
@@ -3327,21 +3602,10 @@ singleQuote: true
     doLogClick(
       'long_name_long_name_long_name',
       'long_name_long_name_long_name',
-      data
+      data,
     );
   }}
 </BookingIntroPanel>;
-
-<Component>
-  {(
-    key: 'possible_key_1' | 'possible_key_2' | 'possible_key_3',
-    value: string | Immutable.List<string>
-  ) => {
-    this.setState({
-      updatedTask: this.state.updatedTask.set(key, value),
-    });
-  }}
-</Component>;
 
 <SuspendyTree>
   <div style={{ height: 200, overflow: 'scroll' }}>

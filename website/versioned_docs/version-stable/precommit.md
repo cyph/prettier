@@ -43,6 +43,14 @@ yarn add --dev pretty-quick
 yarn husky set .husky/pre-commit "npx pretty-quick --staged"
 ```
 
+<!--pnpm-->
+
+```bash
+pnpm exec husky-init
+pnpm add --save-dev pretty-quick
+pnpm exec husky set .husky/pre-commit "npx pretty-quick --staged"
+```
+
 <!--END_DOCUSAURUS_CODE_TABS-->
 
 Read more at the [pretty-quick](https://github.com/azz/pretty-quick) repo.
@@ -67,9 +75,10 @@ Read more at [mirror of prettier package for pre-commit](https://github.com/pre-
 **Use Case:** A dotnet solution to use Prettier along with other code quality tools (e.g. dotnet-format, ESLint, Stylelint, etc.). It supports multiple file states (staged - last-commit, git-files etc.)
 
 ```bash
+dotnet new tool-manifest
 dotnet tool install husky
 dotnet husky install
-dotnet husky add .husky/pre-commit
+dotnet husky add pre-commit
 ```
 
 after installation you can add prettier task to the `task-runner.json`.
@@ -110,6 +119,14 @@ npx husky set .husky/pre-commit "git-format-staged -f 'prettier --ignore-unknown
 npx husky-init # add --yarn2 for Yarn 2
 yarn add --dev git-format-staged
 yarn husky set .husky/pre-commit "git-format-staged -f 'prettier --ignore-unknown --stdin --stdin-filepath \"{}\"' ."
+```
+
+<!--pnpm-->
+
+```bash
+pnpm exec husky-init
+pnpm add --save-dev git-format-staged
+pnpm husky set .husky/pre-commit "git-format-staged -f 'prettier --ignore-unknown --stdin --stdin-filepath \"{}\"' ."
 ```
 
 <!--END_DOCUSAURUS_CODE_TABS-->

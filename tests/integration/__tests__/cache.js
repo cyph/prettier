@@ -1,15 +1,13 @@
-"use strict";
-
-const path = require("path");
-const { promises: fs } = require("fs");
-const rimraf = require("rimraf");
-const { default: stripAnsi } = require("../../../vendors/strip-ansi.js");
-
-const runPrettier = require("../run-prettier.js");
+import path from "node:path";
+import fs from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 
 function resolveDir(dir) {
-  return path.join(__dirname, "..", dir);
+  return fileURLToPath(new URL(`../${dir}/`, import.meta.url));
 }
+
+const runCliWithoutGitignore = (dir, args, options) =>
+  runCli(dir, [...args, "--ignore-path", ".prettierignore"], options);
 
 describe("--cache option", () => {
   const dir = resolveDir("cli/cache");
@@ -18,53 +16,92 @@ describe("--cache option", () => {
     "node_modules/.cache/prettier/.prettier-cache"
   );
 
-  let contentA;
-  let contentB;
+  const nonDefaultCacheFileName = ".non-default-cache-file";
+  const directoryNameAsCacheFile = "directory-as-cache-file";
+  const nonDefaultCacheFilePath = path.join(dir, nonDefaultCacheFileName);
+
+  const contentA = `function a() {
+  console.log("this is a.js")
+}
+`;
+  const contentB = `function b() {
+  console.log("this is b.js");
+}
+`;
+
+  const clean = async () => {
+    await fs.rm(path.join(dir, directoryNameAsCacheFile), {
+      force: true,
+      recursive: true,
+    });
+    await fs.rm(nonDefaultCacheFilePath, { force: true });
+    await fs.rm(path.join(dir, "a.js"), { force: true });
+    await fs.rm(path.join(dir, "b.js"), { force: true });
+  };
 
   beforeAll(async () => {
-    contentA = await fs.readFile(path.join(dir, "a.js"), "utf8");
-    contentB = await fs.readFile(path.join(dir, "b.js"), "utf8");
-  });
-
-  afterEach(async () => {
-    rimraf.sync(path.join(dir, "node_modules"));
+    await clean();
+    await fs.mkdir(path.join(dir, directoryNameAsCacheFile));
     await fs.writeFile(path.join(dir, "a.js"), contentA);
     await fs.writeFile(path.join(dir, "b.js"), contentB);
   });
 
+  afterEach(async () => {
+    await fs.rm(path.join(dir, "node_modules"), {
+      force: true,
+      recursive: true,
+    });
+    await fs.rm(nonDefaultCacheFilePath, { force: true });
+    await fs.writeFile(path.join(dir, "a.js"), contentA);
+    await fs.writeFile(path.join(dir, "b.js"), contentB);
+  });
+  afterAll(clean);
+
   it("throw error when cache-strategy is invalid", async () => {
-    const { stderr } = await runPrettier(dir, [
+    const { stderr } = await runCliWithoutGitignore(dir, [
       "--cache",
       "--cache-strategy",
       "invalid",
-      ".",
+      "*.js",
     ]);
-    expect(stripAnsi(stderr.trim())).toBe(
+    expect(stderr.trim()).toBe(
       '[error] Invalid --cache-strategy value. Expected "content" or "metadata", but received "invalid".'
     );
   });
 
   it("throws error when use with --stdin-filepath", async () => {
-    const { stderr } = await runPrettier(
+    const { stderr } = await runCliWithoutGitignore(
       dir,
       ["--cache", "--stdin-filepath", "foo.js"],
       { input: "const a = a;" }
     );
-    expect(stripAnsi(stderr.trim())).toBe(
-      "[error] `--cache` cannot be used with stdin."
-    );
+    expect(stderr.trim()).toBe("[error] `--cache` cannot be used with stdin.");
   });
 
   it("throws error when use `--cache-strategy` without `--cache`.", async () => {
-    const { stderr } = await runPrettier(
+    const { stderr } = await runCliWithoutGitignore(
       dir,
       ["foo.js", "--cache-strategy", "content"],
       {
         input: "const a = a;",
       }
     );
-    expect(stripAnsi(stderr.trim())).toBe(
+    expect(stderr.trim()).toBe(
       "[error] `--cache-strategy` cannot be used without `--cache`."
+    );
+  });
+
+  it("throws error when `--cache-location` is a directory.", async () => {
+    const { stderr } = await runCliWithoutGitignore(dir, [
+      "foo.js",
+      "--cache",
+      "--cache-location",
+      directoryNameAsCacheFile,
+    ]);
+    expect(stderr.trim()).toEqual(
+      expect.stringMatching(
+        /\[error] Resolved --cache-location '.+' is a directory/
+      )
     );
   });
 
@@ -74,33 +111,38 @@ describe("--cache option", () => {
         "code",
         "ENOENT"
       );
-      await runPrettier(dir, ["--cache", "--cache-strategy", "metadata", "."]);
+      await runCliWithoutGitignore(dir, [
+        "--cache",
+        "--cache-strategy",
+        "metadata",
+        "*.js",
+      ]);
       await expect(fs.stat(defaultCacheFile)).resolves.not.toThrowError();
     });
 
-    it("does'nt format when cache is available", async () => {
-      const { stdout: firstStdout } = await runPrettier(dir, [
+    it("doesn't format when cache is available", async () => {
+      const { stdout: firstStdout } = await runCliWithoutGitignore(dir, [
         "--cache",
         "--write",
         "--cache-strategy",
         "metadata",
-        ".",
+        "*.js",
       ]);
-      expect(stripAnsi(firstStdout).split("\n").filter(Boolean)).toEqual(
+      expect(firstStdout.split("\n")).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms$/),
           expect.stringMatching(/^b\.js .+ms$/),
         ])
       );
 
-      const { stdout: secondStdout } = await runPrettier(dir, [
+      const { stdout: secondStdout } = await runCliWithoutGitignore(dir, [
         "--cache",
         "--write",
         "--cache-strategy",
         "metadata",
-        ".",
+        "*.js",
       ]);
-      expect(stripAnsi(secondStdout).split("\n").filter(Boolean)).toEqual(
+      expect(secondStdout.split("\n")).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms \(cached\)$/),
           expect.stringMatching(/^b\.js .+ms \(cached\)$/),
@@ -109,14 +151,18 @@ describe("--cache option", () => {
     });
 
     it("re-formats when a file has been updated.", async () => {
-      const { stdout: firstStdout } = await runPrettier(dir, [
+      const cliArguments = [
         "--cache",
         "--write",
         "--cache-strategy",
         "metadata",
-        ".",
-      ]);
-      expect(stripAnsi(firstStdout).split("\n").filter(Boolean)).toEqual(
+        "*.js",
+      ];
+      const { stdout: firstStdout } = await runCliWithoutGitignore(
+        dir,
+        cliArguments
+      );
+      expect(firstStdout.split("\n")).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms$/),
           expect.stringMatching(/^b\.js .+ms$/),
@@ -126,14 +172,11 @@ describe("--cache option", () => {
       // Update `a.js`
       await fs.writeFile(path.join(dir, "a.js"), "const a = `a`;");
 
-      const { stdout: secondStdout } = await runPrettier(dir, [
-        "--cache",
-        "--write",
-        "--cache-strategy",
-        "metadata",
-        ".",
-      ]);
-      expect(stripAnsi(secondStdout).split("\n").filter(Boolean)).toEqual(
+      const { stdout: secondStdout } = await runCliWithoutGitignore(
+        dir,
+        cliArguments
+      );
+      expect(secondStdout.split("\n")).toEqual(
         // the cache of `b.js` is only available.
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms$/),
@@ -143,14 +186,18 @@ describe("--cache option", () => {
     });
 
     it("re-formats when timestamp has been updated", async () => {
-      const { stdout: firstStdout } = await runPrettier(dir, [
+      const cliArguments = [
         "--cache",
         "--write",
         "--cache-strategy",
         "metadata",
-        ".",
-      ]);
-      expect(stripAnsi(firstStdout).split("\n").filter(Boolean)).toEqual(
+        "*.js",
+      ];
+      const { stdout: firstStdout } = await runCliWithoutGitignore(
+        dir,
+        cliArguments
+      );
+      expect(firstStdout.split("\n")).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms$/),
           expect.stringMatching(/^b\.js .+ms$/),
@@ -161,14 +208,11 @@ describe("--cache option", () => {
       const time = new Date();
       await fs.utimes(path.join(dir, "a.js"), time, time);
 
-      const { stdout: secondStdout } = await runPrettier(dir, [
-        "--cache",
-        "--write",
-        "--cache-strategy",
-        "metadata",
-        ".",
-      ]);
-      expect(stripAnsi(secondStdout).split("\n").filter(Boolean)).toEqual(
+      const { stdout: secondStdout } = await runCliWithoutGitignore(
+        dir,
+        cliArguments
+      );
+      expect(secondStdout.split("\n")).toEqual(
         // the cache of `b.js` is only available.
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms$/),
@@ -178,30 +222,30 @@ describe("--cache option", () => {
     });
 
     it("re-formats when options has been updated.", async () => {
-      const { stdout: firstStdout } = await runPrettier(dir, [
+      const { stdout: firstStdout } = await runCliWithoutGitignore(dir, [
         "--cache",
         "--write",
         "--cache-strategy",
         "metadata",
-        ".",
+        "*.js",
       ]);
-      expect(stripAnsi(firstStdout).split("\n").filter(Boolean)).toEqual(
+      expect(firstStdout.split("\n")).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms$/),
           expect.stringMatching(/^b\.js .+ms$/),
         ])
       );
 
-      const { stdout: secondStdout } = await runPrettier(dir, [
+      const { stdout: secondStdout } = await runCliWithoutGitignore(dir, [
         "--cache",
         "--cache-strategy",
         "metadata",
         "--write",
         "--trailing-comma",
         "all",
-        ".",
+        "*.js",
       ]);
-      expect(stripAnsi(secondStdout).split("\n").filter(Boolean)).toEqual(
+      expect(secondStdout.split("\n")).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms$/),
           expect.stringMatching(/^b\.js .+ms$/),
@@ -209,16 +253,111 @@ describe("--cache option", () => {
       );
     });
 
+    it("re-formats after execution without write.", async () => {
+      await runCliWithoutGitignore(dir, [
+        "--cache",
+        "--cache-strategy",
+        "metadata",
+        "*.js",
+      ]);
+
+      const { stdout: secondStdout } = await runCliWithoutGitignore(dir, [
+        "--write",
+        "--cache",
+        "--cache-strategy",
+        "metadata",
+        "*.js",
+      ]);
+      expect(secondStdout.split("\n")).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(/^a\.js .+ms$/),
+          expect.stringMatching(/^b\.js .+ms \(cached\)$/),
+        ])
+      );
+    });
+
+    it("re-formats when multiple cached files are updated.", async () => {
+      const cliArguments = [
+        "--write",
+        "--cache",
+        "--cache-strategy",
+        "metadata",
+        "*.js",
+      ];
+      await runCliWithoutGitignore(dir, cliArguments);
+
+      // Update `a.js` to unformatted
+      await fs.writeFile(path.join(dir, "a.js"), "const a = `a`;    ");
+
+      // Update `b.js` but still formatted
+      const time = new Date();
+      await fs.utimes(path.join(dir, "b.js"), time, time);
+
+      await runCliWithoutGitignore(dir, [
+        "--cache",
+        "--cache-strategy",
+        "metadata",
+        "*.js",
+      ]);
+
+      const { stdout: thirdStdout } = await runCliWithoutGitignore(
+        dir,
+        cliArguments
+      );
+      expect(thirdStdout.split("\n")).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(/^a\.js .+ms$/),
+          expect.stringMatching(/^b\.js .+ms \(cached\)$/),
+        ])
+      );
+    });
+
+    it("doesn't cache files when write error.", async () => {
+      const {
+        stdout: firstStdout,
+        stderr: firstStderr,
+        status: firstStatus,
+      } = await runCliWithoutGitignore(
+        dir,
+        ["--write", "--cache", "--cache-strategy", "metadata", "*.js"],
+        {
+          mockWriteFileErrors: {
+            "a.js": "EACCES: permission denied.",
+          },
+        }
+      );
+      expect(firstStatus).toBe(2);
+      expect(firstStderr).toBe(
+        '[error] Unable to write file "a.js":\n' +
+          "[error] EACCES: permission denied. (mocked error)"
+      );
+      expect(firstStdout.split("\n")).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(/^a\.js .+ms$/),
+          expect.stringMatching(/^b\.js .+ms$/),
+        ])
+      );
+
+      const { stdout: secondStdout } = await runCliWithoutGitignore(dir, [
+        "--list-different",
+        "--cache",
+        "--cache-strategy",
+        "metadata",
+        "*.js",
+      ]);
+      expect(secondStdout).toBe("a.js");
+    });
+
     it("removes cache file when run Prettier without `--cache` option", async () => {
-      await runPrettier(dir, [
+      await runCliWithoutGitignore(dir, [
         "--cache",
         "--write",
         "--cache-strategy",
         "metadata",
-        ".",
+        "*.js",
       ]);
       await expect(fs.stat(defaultCacheFile)).resolves.not.toThrowError();
-      await runPrettier(dir, ["--write", "."]);
+      await runCliWithoutGitignore(dir, ["--write", "*.js"]);
       await expect(fs.stat(defaultCacheFile)).rejects.toThrowError();
     });
   });
@@ -229,33 +368,39 @@ describe("--cache option", () => {
         "code",
         "ENOENT"
       );
-      await runPrettier(dir, ["--cache", "--cache-strategy", "content", "."]);
+      await runCliWithoutGitignore(dir, [
+        "--cache",
+        "--cache-strategy",
+        "content",
+        "*.js",
+      ]);
       await expect(fs.stat(defaultCacheFile)).resolves.not.toThrowError();
     });
 
-    it("does'nt format when cache is available", async () => {
-      const { stdout: firstStdout } = await runPrettier(dir, [
+    it("doesn't format when cache is available", async () => {
+      const cliArguments = [
         "--cache",
         "--cache-strategy",
         "content",
         "--write",
-        ".",
-      ]);
-      expect(stripAnsi(firstStdout).split("\n").filter(Boolean)).toEqual(
+        "*.js",
+      ];
+      const { stdout: firstStdout } = await runCliWithoutGitignore(
+        dir,
+        cliArguments
+      );
+      expect(firstStdout.split("\n")).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms$/),
           expect.stringMatching(/^b\.js .+ms$/),
         ])
       );
 
-      const { stdout: secondStdout } = await runPrettier(dir, [
-        "--cache",
-        "--cache-strategy",
-        "content",
-        "--write",
-        ".",
-      ]);
-      expect(stripAnsi(secondStdout).split("\n").filter(Boolean)).toEqual(
+      const { stdout: secondStdout } = await runCliWithoutGitignore(
+        dir,
+        cliArguments
+      );
+      expect(secondStdout.split("\n")).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms \(cached\)$/),
           expect.stringMatching(/^b\.js .+ms \(cached\)$/),
@@ -264,14 +409,18 @@ describe("--cache option", () => {
     });
 
     it("re-formats when a file has been updated.", async () => {
-      const { stdout: firstStdout } = await runPrettier(dir, [
+      const cliArguments = [
         "--cache",
         "--cache-strategy",
         "content",
         "--write",
-        ".",
-      ]);
-      expect(stripAnsi(firstStdout).split("\n").filter(Boolean)).toEqual(
+        "*.js",
+      ];
+      const { stdout: firstStdout } = await runCliWithoutGitignore(
+        dir,
+        cliArguments
+      );
+      expect(firstStdout.split("\n")).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms$/),
           expect.stringMatching(/^b\.js .+ms$/),
@@ -281,14 +430,11 @@ describe("--cache option", () => {
       // Update `a.js`
       await fs.writeFile(path.join(dir, "a.js"), "const a = `a`;");
 
-      const { stdout: secondStdout } = await runPrettier(dir, [
-        "--cache",
-        "--cache-strategy",
-        "content",
-        "--write",
-        ".",
-      ]);
-      expect(stripAnsi(secondStdout).split("\n").filter(Boolean)).toEqual(
+      const { stdout: secondStdout } = await runCliWithoutGitignore(
+        dir,
+        cliArguments
+      );
+      expect(secondStdout.split("\n")).toEqual(
         // the cache of `b.js` is only available.
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms$/),
@@ -297,15 +443,19 @@ describe("--cache option", () => {
       );
     });
 
-    it("does'nt re-format when timestamp has been updated", async () => {
-      const { stdout: firstStdout } = await runPrettier(dir, [
+    it("doesn't re-format when timestamp has been updated", async () => {
+      const cliArguments = [
         "--cache",
         "--cache-strategy",
         "content",
         "--write",
-        ".",
-      ]);
-      expect(stripAnsi(firstStdout).split("\n").filter(Boolean)).toEqual(
+        "*.js",
+      ];
+      const { stdout: firstStdout } = await runCliWithoutGitignore(
+        dir,
+        cliArguments
+      );
+      expect(firstStdout.split("\n")).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms$/),
           expect.stringMatching(/^b\.js .+ms$/),
@@ -316,14 +466,11 @@ describe("--cache option", () => {
       const time = new Date();
       await fs.utimes(path.join(dir, "a.js"), time, time);
 
-      const { stdout: secondStdout } = await runPrettier(dir, [
-        "--cache",
-        "--cache-strategy",
-        "content",
-        "--write",
-        ".",
-      ]);
-      expect(stripAnsi(secondStdout).split("\n").filter(Boolean)).toEqual(
+      const { stdout: secondStdout } = await runCliWithoutGitignore(
+        dir,
+        cliArguments
+      );
+      expect(secondStdout.split("\n")).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms \(cached\)$/),
           expect.stringMatching(/^b\.js .+ms \(cached\)$/),
@@ -332,30 +479,30 @@ describe("--cache option", () => {
     });
 
     it("re-formats when options has been updated.", async () => {
-      const { stdout: firstStdout } = await runPrettier(dir, [
+      const { stdout: firstStdout } = await runCliWithoutGitignore(dir, [
         "--cache",
         "--cache-strategy",
         "content",
         "--write",
-        ".",
+        "*.js",
       ]);
-      expect(stripAnsi(firstStdout).split("\n").filter(Boolean)).toEqual(
+      expect(firstStdout.split("\n")).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms$/),
           expect.stringMatching(/^b\.js .+ms$/),
         ])
       );
 
-      const { stdout: secondStdout } = await runPrettier(dir, [
+      const { stdout: secondStdout } = await runCliWithoutGitignore(dir, [
         "--cache",
         "--write",
         "--cache-strategy",
         "content",
         "--trailing-comma",
         "all",
-        ".",
+        "*.js",
       ]);
-      expect(stripAnsi(secondStdout).split("\n").filter(Boolean)).toEqual(
+      expect(secondStdout.split("\n")).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^a\.js .+ms$/),
           expect.stringMatching(/^b\.js .+ms$/),
@@ -363,11 +510,186 @@ describe("--cache option", () => {
       );
     });
 
+    it("re-formats after execution without write.", async () => {
+      await runCliWithoutGitignore(dir, [
+        "--cache",
+        "--cache-strategy",
+        "content",
+        "*.js",
+      ]);
+
+      const { stdout: secondStdout } = await runCliWithoutGitignore(dir, [
+        "--write",
+        "--cache",
+        "--cache-strategy",
+        "content",
+        "*.js",
+      ]);
+      expect(secondStdout.split("\n")).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(/^a\.js .+ms$/),
+          expect.stringMatching(/^b\.js .+ms \(cached\)$/),
+        ])
+      );
+    });
+
+    it("re-formats when multiple cached files are updated.", async () => {
+      const cliArguments = [
+        "--write",
+        "--cache",
+        "--cache-strategy",
+        "content",
+        "*.js",
+      ];
+      await runCliWithoutGitignore(dir, cliArguments);
+
+      // Update `a.js` to unformatted
+      await fs.writeFile(path.join(dir, "a.js"), "const a = `a`;    ");
+
+      // Update `b.js` but still formatted
+      const time = new Date();
+      await fs.utimes(path.join(dir, "b.js"), time, time);
+
+      await runCliWithoutGitignore(dir, [
+        "--cache",
+        "--cache-strategy",
+        "content",
+        "*.js",
+      ]);
+
+      const { stdout: thirdStdout } = await runCliWithoutGitignore(
+        dir,
+        cliArguments
+      );
+      expect(thirdStdout.split("\n")).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(/^a\.js .+ms$/),
+          expect.stringMatching(/^b\.js .+ms \(cached\)$/),
+        ])
+      );
+    });
+
+    it("doesn't cache files when write error.", async () => {
+      const {
+        stdout: firstStdout,
+        stderr: firstStderr,
+        status: firstStatus,
+      } = await runCliWithoutGitignore(
+        dir,
+        ["--write", "--cache", "--cache-strategy", "content", "*.js"],
+        {
+          mockWriteFileErrors: {
+            "a.js": "EACCES: permission denied.",
+          },
+        }
+      );
+      expect(firstStatus).toBe(2);
+      expect(firstStderr).toBe(
+        '[error] Unable to write file "a.js":\n' +
+          "[error] EACCES: permission denied. (mocked error)"
+      );
+      expect(firstStdout.split("\n")).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(/^a\.js .+ms$/),
+          expect.stringMatching(/^b\.js .+ms$/),
+        ])
+      );
+
+      const { stdout: secondStdout } = await runCliWithoutGitignore(dir, [
+        "--list-different",
+        "--cache",
+        "--cache-strategy",
+        "content",
+        "*.js",
+      ]);
+      expect(secondStdout).toBe("a.js");
+    });
+
     it("removes cache file when run Prettier without `--cache` option", async () => {
-      await runPrettier(dir, ["--cache", "--write", "."]);
+      await runCliWithoutGitignore(dir, ["--cache", "--write", "*.js"]);
       await expect(fs.stat(defaultCacheFile)).resolves.not.toThrowError();
-      await runPrettier(dir, ["--write", "."]);
+      await runCliWithoutGitignore(dir, ["--write", "*.js"]);
       await expect(fs.stat(defaultCacheFile)).rejects.toThrowError();
+    });
+  });
+
+  describe("--cache-location", () => {
+    it("doesn't create default cache file when `--cache-location` exists", async () => {
+      await expect(fs.stat(defaultCacheFile)).rejects.toHaveProperty(
+        "code",
+        "ENOENT"
+      );
+      await runCliWithoutGitignore(dir, [
+        "--cache",
+        "--cache-location",
+        nonDefaultCacheFileName,
+        "*.js",
+      ]);
+      await expect(fs.stat(defaultCacheFile)).rejects.toHaveProperty(
+        "code",
+        "ENOENT"
+      );
+    });
+
+    it("throws error for invalid JSON file", async () => {
+      const { stderr } = await runCliWithoutGitignore(dir, [
+        "--cache",
+        "--cache-location",
+        "a.js",
+        "*.js",
+      ]);
+      expect(stderr.trim()).toEqual(
+        expect.stringMatching(/\[error] '.+' isn't a valid JSON file/)
+      );
+    });
+
+    describe("file", () => {
+      it("creates the cache file at location specified by `--cache-location`", async () => {
+        await expect(fs.stat(nonDefaultCacheFilePath)).rejects.toHaveProperty(
+          "code",
+          "ENOENT"
+        );
+        await runCliWithoutGitignore(dir, [
+          "--cache",
+          "--cache-location",
+          nonDefaultCacheFileName,
+          "*.js",
+        ]);
+        await expect(
+          fs.stat(nonDefaultCacheFilePath)
+        ).resolves.not.toThrowError();
+      });
+
+      it("does'nt format when cache is available", async () => {
+        const cliArguments = [
+          "--cache",
+          "--write",
+          "--cache-location",
+          nonDefaultCacheFileName,
+          "*.js",
+        ];
+        const { stdout: firstStdout } = await runCliWithoutGitignore(
+          dir,
+          cliArguments
+        );
+        expect(firstStdout.split("\n")).toEqual(
+          expect.arrayContaining([
+            expect.stringMatching(/^a\.js .+ms$/),
+            expect.stringMatching(/^b\.js .+ms$/),
+          ])
+        );
+
+        const { stdout: secondStdout } = await runCliWithoutGitignore(
+          dir,
+          cliArguments
+        );
+        expect(secondStdout.split("\n")).toEqual(
+          expect.arrayContaining([
+            expect.stringMatching(/^a\.js .+ms \(cached\)$/),
+            expect.stringMatching(/^b\.js .+ms \(cached\)$/),
+          ])
+        );
+      });
     });
   });
 });

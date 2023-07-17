@@ -22,7 +22,7 @@ export function buildCliArgs(availableOptions, options) {
   for (const option of availableOptions) {
     const value = options[option.name];
 
-    if (typeof value === "undefined") {
+    if (value === undefined) {
       continue;
     }
 
@@ -53,13 +53,13 @@ export function getCodemirrorMode(parser) {
 }
 
 const astAutoFold = {
-  estree:
-    /^\s*"(loc|start|end|tokens|leadingComments|trailingComments|innerComments)":/,
+  estree: /^\s*"(loc|start|end|tokens|\w+Comments|comments)":/,
   postcss: /^\s*"(source|input|raws|file)":/,
-  html: /^\s*"(sourceSpan|valueSpan|nameSpan|startSourceSpan|endSourceSpan|tagDefinition)":/,
+  html: /^\s*"(\w+Span|valueTokens|tokens|file|tagDefinition)":/,
   mdast: /^\s*"position":/,
   yaml: /^\s*"position":/,
   glimmer: /^\s*"loc":/,
+  graphql: /^\s*"loc":/,
 };
 
 export function getAstAutoFold(parser) {
@@ -90,9 +90,33 @@ export function getAstAutoFold(parser) {
       return astAutoFold.mdast;
     case "yaml":
       return astAutoFold.yaml;
-    case "glimmer":
-      return astAutoFold.glimmer;
+    default:
+      return astAutoFold[parser];
   }
+}
+
+export function convertSelectionToRange({ head, anchor }, content) {
+  const lines = content.split("\n");
+  return [head, anchor]
+    .map(
+      ({ ch, line }) =>
+        lines.slice(0, line).join("\n").length + ch + (line ? 1 : 0)
+    )
+    .sort((a, b) => a - b);
+}
+
+export function convertOffsetToSelection(offset, content) {
+  let line = 0;
+  let ch = 0;
+  for (let i = 0; i < offset && i <= content.length; i++) {
+    if (content[i] === "\n") {
+      line++;
+      ch = 0;
+    } else {
+      ch++;
+    }
+  }
+  return { anchor: { line, ch } };
 }
 
 /**
