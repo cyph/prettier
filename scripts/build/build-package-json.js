@@ -24,12 +24,14 @@ async function buildPackageJson({ file, files }) {
 
   const bin = files.find(
     (file) =>
-      path.join(PROJECT_ROOT, packageJson.bin) ===
+      path.join(PROJECT_ROOT, packageJson.bin['cyph-prettier']) ===
       path.join(PROJECT_ROOT, file.input)
   ).output.file;
 
   const overrides = {
-    bin: `./${bin}`,
+    bin: {
+      "cyph-prettier": `./${bin}`
+    },
     main: "./index.cjs",
     engines: {
       ...packageJson.engines,
