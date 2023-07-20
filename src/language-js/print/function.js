@@ -149,13 +149,13 @@ function printMethod(path, options, print) {
   parts.push(
     printPropertyKey(path, options, print),
     node.optional || node.key.optional ? "?" : "",
-    node === value ? printMethodValue(path, options, print, kind) : print("value")
+    node === value ? printMethodValue(path, options, print) : print("value")
   );
 
   return parts;
 }
 
-function printMethodValue(path, options, print, kind) {
+function printMethodValue(path, options, print) {
   const { node } = path;
   const parametersDoc = printFunctionParameters(
     path,
@@ -163,7 +163,7 @@ function printMethodValue(path, options, print, kind) {
     options,
     undefined,
     undefined,
-    {start: true, end: kind !== "constructor"}
+    {start: true, end: !!node.returnType}
   );
   const returnTypeDoc = printReturnType(path, print);
   const shouldBreakParameters = shouldBreakFunctionParameters(node);

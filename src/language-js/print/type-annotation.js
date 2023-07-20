@@ -284,7 +284,6 @@ function printFunctionType(path, options, print) {
     options,
     /* expandArg */ false,
     /* printTypeParams */ true,
-    {start: true}
   );
 
   const returnTypeDoc = [];
