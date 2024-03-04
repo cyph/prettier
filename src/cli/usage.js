@@ -1,7 +1,8 @@
 import camelCase from "camelcase";
+
 import { categoryOrder, usageSummary } from "./constants.evaluate.js";
-import { groupBy } from "./utils.js";
 import { formatOptionsHiddenDefaults } from "./prettier-internal.js";
+import { groupBy } from "./utils.js";
 
 const OPTION_USAGE_THRESHOLD = 25;
 const CHOICE_USAGE_MARGIN = 3;
@@ -20,7 +21,7 @@ function createDefaultValueDisplay(value) {
 function getOptionDefaultValue(context, optionName) {
   // --no-option
   const option = context.detailedOptions.find(
-    ({ name }) => name === optionName
+    ({ name }) => name === optionName,
   );
 
   if (option?.default !== undefined) {
@@ -31,7 +32,7 @@ function getOptionDefaultValue(context, optionName) {
   return (
     formatOptionsHiddenDefaults[optionCamelName] ??
     context.supportOptions.find(
-      (option) => !option.deprecated && option.name === optionCamelName
+      (option) => !option.deprecated && option.name === optionCamelName,
     )?.default
   );
 }
@@ -75,8 +76,8 @@ function createChoiceUsages(choices, margin, indentation) {
   return activeChoices.map((choice) =>
     indent(
       createOptionUsageRow(choice.value, choice.description, threshold),
-      indentation
-    )
+      indentation,
+    ),
   );
 }
 
@@ -90,7 +91,7 @@ function createOptionUsage(context, option, threshold) {
         ? ""
         : `\nDefaults to ${createDefaultValueDisplay(optionDefaultValue)}.`
     }`,
-    threshold
+    threshold,
   );
 }
 
@@ -112,7 +113,7 @@ function getOptionsWithOpposites(options) {
 
 function createUsage(context) {
   const sortedOptions = context.detailedOptions.sort((optionA, optionB) =>
-    optionA.name.localeCompare(optionB.name)
+    optionA.name.localeCompare(optionB.name),
   );
 
   const options = getOptionsWithOpposites(sortedOptions).filter(
@@ -122,14 +123,14 @@ function createUsage(context) {
         option.type === "boolean" &&
         option.oppositeDescription &&
         !option.name.startsWith("no-")
-      )
+      ),
   );
   const groupedOptions = groupBy(options, (option) => option.category);
 
   const firstCategories = categoryOrder.slice(0, -1);
   const lastCategories = categoryOrder.slice(-1);
   const restCategories = Object.keys(groupedOptions).filter(
-    (category) => !categoryOrder.includes(category)
+    (category) => !categoryOrder.includes(category),
   );
   const allCategories = [
     ...firstCategories,
@@ -140,7 +141,7 @@ function createUsage(context) {
   const optionsUsage = allCategories.map((category) => {
     const categoryOptions = groupedOptions[category]
       .map((option) =>
-        createOptionUsage(context, option, OPTION_USAGE_THRESHOLD)
+        createOptionUsage(context, option, OPTION_USAGE_THRESHOLD),
       )
       .join("\n");
     return `${category} options:\n\n${indent(categoryOptions, 2)}`;
@@ -156,10 +157,10 @@ function createPluginDefaults(pluginDefaults) {
 
   const defaults = Object.entries(pluginDefaults)
     .sort(([pluginNameA], [pluginNameB]) =>
-      pluginNameA.localeCompare(pluginNameB)
+      pluginNameA.localeCompare(pluginNameB),
     )
     .map(
-      ([plugin, value]) => `* ${plugin}: ${createDefaultValueDisplay(value)}`
+      ([plugin, value]) => `* ${plugin}: ${createDefaultValueDisplay(value)}`,
     )
     .join("\n");
 
@@ -168,7 +169,7 @@ function createPluginDefaults(pluginDefaults) {
 
 function createDetailedUsage(context, flag) {
   const option = getOptionsWithOpposites(context.detailedOptions).find(
-    (option) => option.name === flag || option.alias === flag
+    (option) => option.name === flag || option.alias === flag,
   );
 
   const header = createOptionUsageHeader(option);
@@ -180,7 +181,7 @@ function createDetailedUsage(context, flag) {
       : `\n\nValid options:\n\n${createChoiceUsages(
           option.choices,
           CHOICE_USAGE_MARGIN,
-          CHOICE_USAGE_INDENTATION
+          CHOICE_USAGE_INDENTATION,
         ).join("\n")}`;
 
   const optionDefaultValue = getOptionDefaultValue(context, option.name);
@@ -193,4 +194,4 @@ function createDetailedUsage(context, flag) {
   return `${header}${description}${choices}${defaults}${pluginDefaults}`;
 }
 
-export { createUsage, createDetailedUsage };
+export { createDetailedUsage, createUsage };

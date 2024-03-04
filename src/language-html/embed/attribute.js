@@ -1,10 +1,10 @@
 import { group } from "../../document/builders.js";
 import { mapDoc } from "../../document/utils.js";
-import printSrcset from "./srcset.js";
+import printAngularAttribute from "./angular-attributes.js";
 import printClassNames from "./class-names.js";
+import printSrcset from "./srcset.js";
 import { printStyleAttribute } from "./style.js";
 import printVueAttribute from "./vue-attributes.js";
-import printAngularAttribute from "./angular-attributes.js";
 
 /**
  * @typedef {import("../../document/builders.js").Doc} Doc
@@ -23,8 +23,8 @@ function printAttribute(path, options) {
     /^PRETTIER_HTML_PLACEHOLDER_\d+_\d+_IN_JS$/.test(
       options.originalText.slice(
         node.valueSpan.start.offset,
-        node.valueSpan.end.offset
-      )
+        node.valueSpan.end.offset,
+      ),
     ) || // lwc: html`<my-element data-for={value}></my-element>`
     (options.parser === "lwc" &&
       node.value.startsWith("{") &&
@@ -60,7 +60,7 @@ function printAttributeWithValuePrinter(printValue) {
     }
 
     valueDoc = mapDoc(valueDoc, (doc) =>
-      typeof doc === "string" ? doc.replaceAll('"', "&quot;") : doc
+      typeof doc === "string" ? doc.replaceAll('"', "&quot;") : doc,
     );
 
     return [path.node.rawName, '="', group(valueDoc), '"'];

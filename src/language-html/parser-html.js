@@ -1,23 +1,25 @@
 import {
-  ParseSourceFile,
-  ParseLocation,
-  ParseSourceSpan,
-  parse as parseHtml,
-  RecursiveVisitor,
-  visitAll,
   getHtmlTagDefinition,
+  parse as parseHtml,
+  ParseLocation,
+  ParseSourceFile,
+  ParseSourceSpan,
+  RecursiveVisitor,
   TagContentType,
+  visitAll,
 } from "angular-html-parser";
+
+import createError from "../common/parser-create-error.js";
 import parseFrontMatter from "../utils/front-matter/parse.js";
 import inferParser from "../utils/infer-parser.js";
-import createError from "../common/parser-create-error.js";
-import HTML_TAGS from "./utils/html-tag-names.evaluate.js";
-import HTML_ELEMENT_ATTRIBUTES from "./utils/html-elements-attributes.evaluate.js";
-import isUnknownNamespace from "./utils/is-unknown-namespace.js";
-import { hasPragma } from "./pragma.js";
+import isNonEmptyArray from "../utils/is-non-empty-array.js";
 import { Node } from "./ast.js";
 import { parseIeConditionalComment } from "./conditional-comment.js";
-import { locStart, locEnd } from "./loc.js";
+import { locEnd, locStart } from "./loc.js";
+import { hasPragma } from "./pragma.js";
+import HTML_ELEMENT_ATTRIBUTES from "./utils/html-elements-attributes.evaluate.js";
+import HTML_TAGS from "./utils/html-tag-names.evaluate.js";
+import isUnknownNamespace from "./utils/is-unknown-namespace.js";
 
 /**
  * @typedef {import('angular-html-parser')} AngularHtmlParser
@@ -37,6 +39,44 @@ import { locStart, locEnd } from "./loc.js";
  * }} ParseOptions
  * @typedef {{filepath?: string}} Options
  */
+
+// `@else    if`
+function normalizeAngularControlFlowBlock(node) {
+  if (node.type !== "block") {
+    return;
+  }
+
+  node.name = node.name.toLowerCase().replaceAll(/\s+/g, " ").trim();
+  node.type = "angularControlFlowBlock";
+
+  if (!isNonEmptyArray(node.parameters)) {
+    delete node.parameters;
+    return;
+  }
+
+  for (const parameter of node.parameters) {
+    parameter.type = "angularControlFlowBlockParameter";
+  }
+
+  node.parameters = {
+    type: "angularControlFlowBlockParameters",
+    children: node.parameters,
+    sourceSpan: new ParseSourceSpan(
+      node.parameters[0].sourceSpan.start,
+      node.parameters.at(-1).sourceSpan.end,
+    ),
+  };
+}
+
+function normalizeAngularIcuExpression(node) {
+  if (node.type === "plural" || node.type === "select") {
+    node.clause = node.type;
+    node.type = "angularIcuExpression";
+  }
+  if (node.type === "expansionCase") {
+    node.type = "angularIcuCase";
+  }
+}
 
 /**
  * @param {string} input
@@ -62,13 +102,14 @@ function ngHtmlParser(input, parseOptions, options) {
       ? (...args) =>
           shouldParseAsRawText(...args) ? TagContentType.RAW_TEXT : undefined
       : undefined,
+    tokenizeAngularBlocks: name === "angular" ? true : undefined,
   });
 
   if (name === "vue") {
     const isHtml = rootNodes.some(
       (node) =>
         (node.type === "docType" && node.value === "html") ||
-        (node.type === "element" && node.name.toLowerCase() === "html")
+        (node.type === "element" && node.name.toLowerCase() === "html"),
     );
 
     // If not Vue SFC, treat as html
@@ -89,7 +130,7 @@ function ngHtmlParser(input, parseOptions, options) {
       getHtmlParseResult().rootNodes.find(
         ({ startSourceSpan }) =>
           startSourceSpan &&
-          startSourceSpan.start.offset === node.startSourceSpan.start.offset
+          startSourceSpan.start.offset === node.startSourceSpan.start.offset,
       ) ?? node;
     for (const [index, node] of rootNodes.entries()) {
       const { endSourceSpan, startSourceSpan } = node;
@@ -101,7 +142,7 @@ function ngHtmlParser(input, parseOptions, options) {
         const error = getHtmlParseResult().errors.find(
           (error) =>
             error.span.start.offset > startSourceSpan.start.offset &&
-            error.span.start.offset < endSourceSpan.end.offset
+            error.span.start.offset < endSourceSpan.end.offset,
         );
         if (error) {
           throwParseError(error);
@@ -178,7 +219,7 @@ function ngHtmlParser(input, parseOptions, options) {
           isUnknownNamespace(node))
       ) {
         node.name = lowerCaseIfFn(node.name, (lowerCasedName) =>
-          HTML_TAGS.has(lowerCasedName)
+          HTML_TAGS.has(lowerCasedName),
         );
       }
 
@@ -191,8 +232,8 @@ function ngHtmlParser(input, parseOptions, options) {
                 HTML_ELEMENT_ATTRIBUTES.has(node.name) &&
                 (HTML_ELEMENT_ATTRIBUTES.get("*").has(lowerCasedAttrName) ||
                   HTML_ELEMENT_ATTRIBUTES.get(node.name).has(
-                    lowerCasedAttrName
-                  ))
+                    lowerCasedAttrName,
+                  )),
             );
           }
         }
@@ -204,7 +245,7 @@ function ngHtmlParser(input, parseOptions, options) {
     if (node.sourceSpan && node.endSourceSpan) {
       node.sourceSpan = new ParseSourceSpan(
         node.sourceSpan.start,
-        node.endSourceSpan.end
+        node.endSourceSpan.end,
       );
     }
   };
@@ -215,7 +256,7 @@ function ngHtmlParser(input, parseOptions, options) {
   const addTagDefinition = (node) => {
     if (node.type === "element") {
       const tagDefinition = getHtmlTagDefinition(
-        isTagNameCaseSensitive ? node.name : node.name.toLowerCase()
+        isTagNameCaseSensitive ? node.name : node.name.toLowerCase(),
       );
       if (
         !node.namespace ||
@@ -231,6 +272,16 @@ function ngHtmlParser(input, parseOptions, options) {
 
   visitAll(
     new (class extends RecursiveVisitor {
+      // Angular does not visit to the children of expansionCase
+      // https://github.com/angular/angular/blob/e3a6bf9b6c3bef03df9bfc8f05b817bc875cbad6/packages/compiler/src/ml_parser/ast.ts#L161
+      visitExpansionCase(ast, context) {
+        if (name === "angular") {
+          // @ts-expect-error
+          this.visitChildren(context, (visit) => {
+            visit(ast.expression);
+          });
+        }
+      }
       visit(node) {
         restoreNameAndValue(node);
         addTagDefinition(node);
@@ -238,7 +289,7 @@ function ngHtmlParser(input, parseOptions, options) {
         fixSourceSpan(node);
       }
     })(),
-    rootNodes
+    rootNodes,
   );
 
   return rootNodes;
@@ -276,7 +327,7 @@ function parse(
   text,
   parseOptions,
   options = {},
-  shouldParseFrontMatter = true
+  shouldParseFrontMatter = true,
 ) {
   const { frontMatter, content } = shouldParseFrontMatter
     ? parseFrontMatter(text)
@@ -309,13 +360,13 @@ function parse(
       fakeContent + realContent,
       parseOptions,
       options,
-      false
+      false,
     );
     // @ts-expect-error
     subAst.sourceSpan = new ParseSourceSpan(
       startSpan,
       // @ts-expect-error
-      subAst.children.at(-1).sourceSpan.end
+      subAst.children.at(-1).sourceSpan.end,
     );
     // @ts-expect-error
     const firstText = subAst.children[0];
@@ -325,7 +376,7 @@ function parse(
     } else {
       firstText.sourceSpan = new ParseSourceSpan(
         firstText.sourceSpan.start.moveBy(offset),
-        firstText.sourceSpan.end
+        firstText.sourceSpan.end,
       );
       firstText.value = firstText.value.slice(offset);
     }
@@ -336,12 +387,15 @@ function parse(
     if (node.type === "comment") {
       const ieConditionalComment = parseIeConditionalComment(
         node,
-        parseSubHtml
+        parseSubHtml,
       );
       if (ieConditionalComment) {
         node.parent.replaceChild(node, ieConditionalComment);
       }
     }
+
+    normalizeAngularControlFlowBlock(node);
+    normalizeAngularIcuExpression(node);
   });
 
   return ast;
@@ -386,7 +440,7 @@ export const vue = createParser({
             name === "lang" &&
             value !== "html" &&
             value !== "" &&
-            value !== undefined
+            value !== undefined,
         ))
     );
   },

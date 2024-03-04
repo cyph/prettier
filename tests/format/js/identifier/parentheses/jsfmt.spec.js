@@ -1,14 +1,14 @@
-run_spec(import.meta, [
+runFormatTest(import.meta, [
   "babel",
   //  "flow",
   "typescript",
 ]);
-run_spec(
+runFormatTest(
   import.meta,
   [
     "babel",
     // "flow",
     "typescript",
   ],
-  { semi: false }
+  { semi: false },
 );

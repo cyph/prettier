@@ -39,7 +39,7 @@ function isWideKeywords(value) {
 
 function isKeyframeAtRuleKeywords(path, value) {
   const atRuleAncestorNode = path.findAncestor(
-    (node) => node.type === "css-atrule"
+    (node) => node.type === "css-atrule",
   );
   return (
     atRuleAncestorNode?.name?.toLowerCase().endsWith("keyframes") &&
@@ -61,14 +61,14 @@ function maybeToLowerCase(value) {
 
 function insideValueFunctionNode(path, functionName) {
   const funcAncestorNode = path.findAncestor(
-    (node) => node.type === "value-func"
+    (node) => node.type === "value-func",
   );
   return funcAncestorNode?.value?.toLowerCase() === functionName;
 }
 
 function insideICSSRuleNode(path) {
   const ruleAncestorNode = path.findAncestor(
-    (node) => node.type === "css-rule"
+    (node) => node.type === "css-rule",
   );
   const selector = ruleAncestorNode?.raws?.selector;
 
@@ -83,7 +83,7 @@ function insideAtRuleNode(path, atRuleNameOrAtRuleNames) {
     ? atRuleNameOrAtRuleNames
     : [atRuleNameOrAtRuleNames];
   const atRuleAncestorNode = path.findAncestor(
-    (node) => node.type === "css-atrule"
+    (node) => node.type === "css-atrule",
   );
 
   return (
@@ -387,50 +387,50 @@ function isParenGroupNode(node) {
 
 export {
   getPropOfDeclNode,
-  maybeToLowerCase,
-  insideValueFunctionNode,
-  insideICSSRuleNode,
-  insideAtRuleNode,
-  insideURLFunctionInImportAtRuleNode,
-  isKeyframeAtRuleKeywords,
-  isWideKeywords,
-  isLastNode,
-  isSCSSControlDirectiveNode,
-  isDetachedRulesetDeclarationNode,
-  isRelationalOperatorNode,
-  isEqualityOperatorNode,
-  isMultiplicationNode,
-  isDivisionNode,
-  isAdditionNode,
-  isSubtractionNode,
-  isModuloNode,
-  isMathOperatorNode,
-  isEachKeywordNode,
-  isForKeywordNode,
-  isURLFunctionNode,
-  isIfElseKeywordNode,
   hasComposesNode,
-  hasParensAroundNode,
   hasEmptyRawBefore,
+  hasParensAroundNode,
+  insideAtRuleNode,
+  insideICSSRuleNode,
+  insideURLFunctionInImportAtRuleNode,
+  insideValueFunctionNode,
+  isAdditionNode,
+  isAtWordPlaceholderNode,
+  isColonNode,
+  isColorAdjusterFuncNode,
+  isConfigurationNode,
   isDetachedRulesetCallNode,
+  isDetachedRulesetDeclarationNode,
+  isDivisionNode,
+  isEachKeywordNode,
+  isEqualityOperatorNode,
+  isForKeywordNode,
+  isHashNode,
+  isIfElseKeywordNode,
+  isInlineValueCommentNode,
+  isKeyframeAtRuleKeywords,
+  isKeyInValuePairNode,
+  isKeyValuePairInParenGroupNode,
+  isKeyValuePairNode,
+  isLastNode,
+  isLeftCurlyBraceNode,
+  isMathOperatorNode,
+  isMediaAndSupportsKeywords,
+  isModuloNode,
+  isMultiplicationNode,
+  isParenGroupNode,
+  isPostcssSimpleVarNode,
+  isRelationalOperatorNode,
+  isRightCurlyBraceNode,
+  isSCSSControlDirectiveNode,
+  isSCSSMapItemNode,
+  isSubtractionNode,
   isTemplatePlaceholderNode,
   isTemplatePropNode,
-  isPostcssSimpleVarNode,
-  isKeyValuePairNode,
-  isKeyValuePairInParenGroupNode,
-  isKeyInValuePairNode,
-  isSCSSMapItemNode,
-  isInlineValueCommentNode,
-  isHashNode,
-  isLeftCurlyBraceNode,
-  isRightCurlyBraceNode,
-  isWordNode,
-  isColonNode,
-  isMediaAndSupportsKeywords,
-  isColorAdjusterFuncNode,
-  lastLineHasInlineComment,
-  isAtWordPlaceholderNode,
-  isConfigurationNode,
-  isParenGroupNode,
+  isURLFunctionNode,
   isVarFunctionNode,
+  isWideKeywords,
+  isWordNode,
+  lastLineHasInlineComment,
+  maybeToLowerCase,
 };

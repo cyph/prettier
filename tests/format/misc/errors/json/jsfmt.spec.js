@@ -1,4 +1,4 @@
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -40,10 +40,10 @@ run_spec(
       "----123",
     ],
   },
-  ["json", "json5", "json-stringify"]
+  ["json", "json5", "json-stringify"],
 );
 
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -99,5 +99,5 @@ run_spec(
       "[<foo></foo>]",
     ],
   },
-  ["json"]
+  ["json"],
 );

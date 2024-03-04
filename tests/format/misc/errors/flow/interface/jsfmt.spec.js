@@ -1,4 +1,4 @@
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -12,5 +12,5 @@ run_spec(
       "declare interface A implements B {}",
     ],
   },
-  ["flow", "babel-flow"]
+  ["flow", "babel-flow"],
 );

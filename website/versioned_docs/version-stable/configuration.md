@@ -4,7 +4,7 @@ title: Configuration File
 original_id: configuration
 ---
 
-Prettier uses [cosmiconfig](https://github.com/davidtheclark/cosmiconfig) for configuration file support. This means you can configure Prettier via (in order of precedence):
+You can configure Prettier via (in order of precedence):
 
 - A `"prettier"` key in your `package.json` file.
 - A `.prettierrc` file written in JSON or YAML.
@@ -38,7 +38,7 @@ JS(ESM):
 ```js
 // prettier.config.js, .prettierrc.js, prettier.config.mjs, or .prettierrc.mjs
 
-/** @type {import("prettier").Options} */
+/** @type {import("prettier").Config} */
 const config = {
   trailingComma: "es5",
   tabWidth: 4,
@@ -54,7 +54,7 @@ JS(CommonJS):
 ```js
 // prettier.config.js, .prettierrc.js, prettier.config.cjs, or .prettierrc.cjs
 
-/** @type {import("prettier").Options} */
+/** @type {import("prettier").Config} */
 const config = {
   trailingComma: "es5",
   tabWidth: 4,
@@ -197,7 +197,7 @@ You can also switch to the `flow` parser instead of the default `babel` for .js 
 
 ## Configuration Schema
 
-If you’d like a JSON schema to validate your configuration, one is available here: http://json.schemastore.org/prettierrc.
+If you’d like a JSON schema to validate your configuration, one is available here: https://json.schemastore.org/prettierrc.
 
 ## EditorConfig
 

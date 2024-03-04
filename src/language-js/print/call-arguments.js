@@ -1,42 +1,40 @@
+import { ArgExpansionBailout } from "../../common/errors.js";
+import {
+  breakParent,
+  conditionalGroup,
+  group,
+  hardline,
+  ifBreak,
+  indent,
+  line,
+  softline,
+} from "../../document/builders.js";
+import { willBreak } from "../../document/utils.js";
 import { printDanglingComments } from "../../main/comments/print.js";
 import {
+  CommentCheckFlags,
+  getCallArguments,
+  getCallArgumentSelector,
   getFunctionParameters,
   hasComment,
-  CommentCheckFlags,
+  isArrayOrTupleExpression,
+  isBinaryCastExpression,
+  isBinaryish,
+  isCallExpression,
+  isCallLikeExpression,
   isFunctionCompositionArgs,
   isJsxElement,
   isLongCurriedCallExpression,
-  shouldPrintComma,
-  getCallArguments,
-  iterateCallArgumentsPath,
   isNextLineEmpty,
-  isCallExpression,
-  isStringLiteral,
-  isObjectProperty,
-  getCallArgumentSelector,
-  isSimpleCallArgument,
-  isBinaryish,
-  isRegExpLiteral,
-  isSimpleType,
-  isCallLikeExpression,
-  isTSTypeExpression,
-  isArrayOrTupleExpression,
   isObjectOrRecordExpression,
+  isObjectProperty,
+  isRegExpLiteral,
+  isSimpleCallArgument,
+  isSimpleType,
+  isStringLiteral,
+  iterateCallArgumentsPath,
+  shouldPrintComma,
 } from "../utils/index.js";
-
-import {
-  line,
-  hardline,
-  softline,
-  group,
-  indent,
-  conditionalGroup,
-  ifBreak,
-  breakParent,
-} from "../../document/builders.js";
-import { willBreak } from "../../document/utils.js";
-
-import { ArgExpansionBailout } from "../../common/errors.js";
 import { isConciselyPrintedArray } from "./array.js";
 
 function printCallArguments(path, options, print) {
@@ -79,7 +77,7 @@ function printCallArguments(path, options, print) {
   function allArgsBrokenOut() {
     return group(
       ["(", indent([line, ...printedArguments]), maybeTrailingComma, line, ")"],
-      { shouldBreak: true }
+      { shouldBreak: true },
     );
   }
 
@@ -185,7 +183,7 @@ function couldExpandArg(arg, arrowChainRecursion = false) {
     (isArrayOrTupleExpression(arg) &&
       (arg.elements.length > 0 || hasComment(arg))) ||
     (arg.type === "TSTypeAssertion" && couldExpandArg(arg.expression)) ||
-    (isTSTypeExpression(arg) && couldExpandArg(arg.expression)) ||
+    (isBinaryCastExpression(arg) && couldExpandArg(arg.expression)) ||
     arg.type === "FunctionExpression" ||
     (arg.type === "ArrowFunctionExpression" &&
       // we want to avoid breaking inside composite return types but not simple keywords
@@ -281,7 +279,7 @@ function isHopefullyShortCallArgument(node) {
     return isHopefullyShortCallArgument(node.expression);
   }
 
-  if (isTSTypeExpression(node) || node.type === "TypeCastExpression") {
+  if (isBinaryCastExpression(node) || node.type === "TypeCastExpression") {
     let { typeAnnotation } = node;
     if (typeAnnotation.type === "TypeAnnotation") {
       typeAnnotation = typeAnnotation.typeAnnotation;

@@ -5,7 +5,7 @@ const parsers = (await prettier.getSupportInfo()).options
   .choices.filter((choice) => !choice.deprecated)
   .map((choice) => choice.value);
 
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -39,5 +39,5 @@ run_spec(
       " \r \r\n \n ",
     ].map((code) => ({ code, output: "" })),
   },
-  parsers
+  parsers,
 );

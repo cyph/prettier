@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
-import { URLSearchParams } from "node:url";
 import { describe, it } from "node:test";
+import { URLSearchParams } from "node:url";
+
 import { getReleaseUrl } from "../steps/show-instructions-after-npm-publish.js";
 
 const RELEASE_URL_BASE = "https://github.com/prettier/prettier/releases/new?";
@@ -25,7 +26,7 @@ describe("publish-to-npm", () => {
           tag: "2.3.1",
           title: "2.3.1",
           body: "🔗 [Changelog](https://github.com/prettier/prettier/blob/main/CHANGELOG.md#231)",
-        })
+        }),
       );
     });
 
@@ -39,10 +40,10 @@ describe("publish-to-npm", () => {
           body: [
             "[diff](https://github.com/prettier/prettier/compare/2.3.0...2.4.0)",
             `🔗 [Release note](https://prettier.io/blog/${getDateParts().join(
-              "/"
+              "/",
             )}/2.4.0.html)`,
           ].join("\n\n"),
-        })
+        }),
       );
     });
 
@@ -56,10 +57,10 @@ describe("publish-to-npm", () => {
           body: [
             "[diff](https://github.com/prettier/prettier/compare/2.2.0...2.3.0)",
             `🔗 [Release note](https://prettier.io/blog/${getDateParts().join(
-              "/"
+              "/",
             )}/2.3.0.html)`,
           ].join("\n\n"),
-        })
+        }),
       );
     });
   });

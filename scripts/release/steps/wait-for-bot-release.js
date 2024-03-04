@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import outdent from "outdent";
-import { waitForEnter, logPromise } from "../utils.js";
+
+import { logPromise, waitForEnter } from "../utils.js";
 
 export async function isVersionReleased(version) {
   const response = await fetch("https://registry.npmjs.org/prettier/");
@@ -26,7 +27,7 @@ const sleep = () =>
     setTimeout(resolve, 30_000);
   });
 
-export default async function waitForBotRelease({ dry, version }) {
+export default async function waitForBotRelease({ dry, version, next }) {
   if (dry) {
     return;
   }
@@ -35,10 +36,10 @@ export default async function waitForBotRelease({ dry, version }) {
     console.log(
       outdent`
         1. Go to ${chalk.green.underline(
-          "https://www.npmjs.com/package/prettier/access"
+          "https://www.npmjs.com/package/prettier/access",
         )}
         2. Add "${chalk.yellow("prettier-bot")}" as prettier package maintainer.
-      `
+      `,
     );
 
     await waitForEnter();
@@ -47,14 +48,14 @@ export default async function waitForBotRelease({ dry, version }) {
   console.log(
     outdent`
       1. Go to ${chalk.green.underline(
-        "https://www.npmjs.com/package/prettier/access"
+        "https://www.npmjs.com/package/prettier/access",
       )}
       2. Make sure "${chalk.yellow(
-        "Publishing access"
+        "Publishing access",
       )}" section is set to "${chalk.yellow(
-      "Require two-factor authentication or automation tokens"
-    )}".
-    `
+        "Require two-factor authentication or automation tokens",
+      )}".
+    `,
   );
 
   await waitForEnter();
@@ -62,16 +63,16 @@ export default async function waitForBotRelease({ dry, version }) {
   console.log(
     outdent`
       1. Go to ${chalk.green.underline(
-        "https://github.com/prettier/release-workflow/actions/workflows/release.yml"
+        "https://github.com/prettier/release-workflow/actions/workflows/release.yml",
       )}
       2. Click "${chalk.green(
-        "Run workflow"
+        "Run workflow",
       )}" button, type "${chalk.yellow.underline(
-      version
-    )}" in "Version to release", uncheck all checkboxes, hit the "${chalk.bgGreen(
-      "Run workflow"
-    )}" button.
-    `
+        version,
+      )}" in "Version to release", ${
+        next ? 'check only "Unstable version"' : "uncheck all checkboxes"
+      }, hit the "${chalk.bgGreen("Run workflow")}" button.
+    `,
   );
 
   await waitForEnter();
@@ -81,7 +82,7 @@ export default async function waitForBotRelease({ dry, version }) {
     try {
       released = await logPromise(
         "Checking release status",
-        isVersionReleased(version)
+        isVersionReleased(version),
       );
     } catch {
       // No op

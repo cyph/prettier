@@ -1,4 +1,4 @@
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -9,5 +9,5 @@ run_spec(
       "interface A implements B {}",
     ],
   },
-  ["babel-ts", "typescript"]
+  ["babel-ts", "typescript"],
 );

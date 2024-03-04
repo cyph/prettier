@@ -1,9 +1,10 @@
-import path from "node:path";
 import fs from "node:fs";
-import { outdent } from "outdent";
-import { execaSync } from "execa";
-import { temporaryDirectory as createTemporaryDirectory } from "tempy";
+import path from "node:path";
+
 import chalk from "chalk";
+import { execaSync } from "execa";
+import { outdent } from "outdent";
+import { temporaryDirectory as createTemporaryDirectory } from "tempy";
 
 const allowedClients = new Set(["yarn", "npm", "pnpm"]);
 
@@ -79,13 +80,13 @@ function installPrettier(packageDirectory) {
           at ${chalk.inverse(temporaryDirectory)}
           from ${chalk.inverse(packageDirectory)}
           with ${chalk.inverse(client)}.
-      `
-    )
+      `,
+    ),
   );
 
   fs.writeFileSync(
     path.join(temporaryDirectory, "index-proxy.mjs"),
-    "export * from 'prettier';"
+    "export * from 'prettier';",
   );
 
   return temporaryDirectory;

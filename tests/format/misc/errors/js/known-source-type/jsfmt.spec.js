@@ -1,4 +1,4 @@
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -16,5 +16,5 @@ run_spec(
       },
     ],
   },
-  ["acorn", "espree", "meriyah"]
+  ["acorn", "espree", "meriyah"],
 );

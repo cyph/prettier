@@ -1,14 +1,14 @@
 import { stripTrailingHardline } from "../document/utils.js";
+import createGetVisitorKeysFunction from "./create-get-visitor-keys-function.js";
 import normalizeFormatOptions from "./normalize-format-options.js";
 import parse from "./parse.js";
-import createGetVisitorKeysFunction from "./create-get-visitor-keys-function.js";
 
 async function printEmbeddedLanguages(
   /** @type {import("../common/ast-path.js").default} */ path,
   genericPrint,
   options,
   printAstToDoc,
-  embeds
+  embeds,
 ) {
   const {
     embeddedLanguageFormatting,
@@ -25,12 +25,12 @@ async function printEmbeddedLanguages(
 
   if (embed.length > 2) {
     throw new Error(
-      "printer.embed has too many parameters. The API changed in Prettier v3. Please update your plugin. See https://prettier.io/docs/en/plugins.html#optional-embed"
+      "printer.embed has too many parameters. The API changed in Prettier v3. Please update your plugin. See https://prettier.io/docs/en/plugins.html#optional-embed",
     );
   }
 
   const getVisitorKeys = createGetVisitorKeysFunction(
-    embed.getVisitorKeys ?? printerGetVisitorKeys
+    embed.getVisitorKeys ?? printerGetVisitorKeys,
   );
   const embedCallResults = [];
 
@@ -94,7 +94,7 @@ async function printEmbeddedLanguages(
       typeof result.then === "function"
     ) {
       throw new Error(
-        "`embed` should return an async function instead of Promise."
+        "`embed` should return an async function instead of Promise.",
       );
     }
 
@@ -106,7 +106,7 @@ async function textToDoc(
   text,
   partialNextOptions,
   parentOptions,
-  printAstToDoc
+  printAstToDoc,
 ) {
   const options = await normalizeFormatOptions(
     {
@@ -115,7 +115,7 @@ async function textToDoc(
       parentParser: parentOptions.parser,
       originalText: text,
     },
-    { passThrough: true }
+    { passThrough: true },
   );
 
   const { ast } = await parse(text, options);

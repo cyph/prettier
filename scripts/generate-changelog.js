@@ -11,8 +11,10 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
-import createEsmUtils from "esm-utils";
+
 import enquirer from "enquirer";
+import createEsmUtils from "esm-utils";
+
 import { CHANGELOG_CATEGORIES } from "./utils/changelog-categories.js";
 
 const { __dirname } = createEsmUtils(import.meta);
@@ -79,7 +81,7 @@ async function getPr(prNumber) {
 async function addNewChangelog(prNumber, category, newChangelog) {
   const newChangelogPath = path.resolve(
     __dirname,
-    `../changelog_unreleased/${category}/${prNumber}.md`
+    `../changelog_unreleased/${category}/${prNumber}.md`,
   );
   await fs.writeFile(newChangelogPath, newChangelog);
   return newChangelogPath;
@@ -95,7 +97,7 @@ async function addNewChangelog(prNumber, category, newChangelog) {
 async function createChangelog(title, user, prNumber, category) {
   const changelogTemplatePath = path.resolve(
     __dirname,
-    "../changelog_unreleased/TEMPLATE.md"
+    "../changelog_unreleased/TEMPLATE.md",
   );
   const changelogTemplate = await fs.readFile(changelogTemplatePath, "utf8");
 
@@ -117,11 +119,11 @@ async function createChangelog(title, user, prNumber, category) {
     .replace(inputCommentPart, getCommentForSyntax(syntax, "Input") + "\n")
     .replace(
       stableCommentPart,
-      getCommentForSyntax(syntax, "Prettier stable") + "\n"
+      getCommentForSyntax(syntax, "Prettier stable") + "\n",
     )
     .replace(
       mainCommentPart,
-      getCommentForSyntax(syntax, "Prettier main") + "\n"
+      getCommentForSyntax(syntax, "Prettier main") + "\n",
     );
 }
 

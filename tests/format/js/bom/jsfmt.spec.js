@@ -4,7 +4,7 @@ const fixtureDirectory = new URL("../eol/", import.meta.url);
 const snippets = fs
   .readdirSync(fixtureDirectory)
   .filter(
-    (fileName) => fileName !== "__snapshots__" && fileName !== "jsfmt.spec.js"
+    (fileName) => fileName !== "__snapshots__" && fileName !== "jsfmt.spec.js",
   )
   .map((fileName) => {
     const file = new URL(fileName, fixtureDirectory);
@@ -15,4 +15,4 @@ const snippets = fs
     };
   });
 
-run_spec({ importMeta: import.meta, snippets }, ["babel"]);
+runFormatTest({ importMeta: import.meta, snippets }, ["babel"]);

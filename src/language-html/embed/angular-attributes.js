@@ -1,17 +1,17 @@
-import {
-  getUnescapedAttributeValue,
-  getTextValueParts,
-} from "../utils/index.js";
 import { fill } from "../../document/builders.js";
+import {
+  getTextValueParts,
+  getUnescapedAttributeValue,
+} from "../utils/index.js";
+import {
+  interpolationRegex as angularInterpolationRegex,
+  printAngularInterpolation,
+} from "./angular-interpolation.js";
 import {
   formatAttributeValue,
   printExpand,
   shouldHugJsExpression,
 } from "./utils.js";
-import {
-  interpolationRegex as angularInterpolationRegex,
-  printAngularInterpolation,
-} from "./angular-interpolation.js";
 
 function createAngularPrinter({ parser }) {
   return (textToDoc, print, path /*, options*/) =>
@@ -23,7 +23,7 @@ function createAngularPrinter({ parser }) {
         // angular does not allow trailing comma
         trailingComma: "none",
       },
-      shouldHugJsExpression
+      shouldHugJsExpression,
     );
 }
 
@@ -82,7 +82,7 @@ function printAngularAttribute(path, options) {
     return () =>
       printExpand(
         fill(getTextValueParts(node, value.trim())),
-        !value.includes("@@")
+        !value.includes("@@"),
       );
   }
 

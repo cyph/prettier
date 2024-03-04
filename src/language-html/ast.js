@@ -1,6 +1,8 @@
 const NODES_KEYS = {
   attrs: true,
   children: true,
+  cases: true, // plural and select
+  expression: true, // for expansionCase
 };
 
 const NON_ENUMERABLE_PROPERTIES = new Set(["parent"]);
@@ -99,7 +101,7 @@ class Node {
       // @ts-expect-error
       this.children.indexOf(target),
       0,
-      this.createChild(node)
+      this.createChild(node),
     );
   }
 
@@ -136,12 +138,12 @@ class Node {
 
   get prev() {
     // @ts-expect-error
-    return this.parent?.children[this.parent.children.indexOf(this) - 1];
+    return this.parent?.children?.[this.parent.children.indexOf(this) - 1];
   }
 
   get next() {
     // @ts-expect-error
-    return this.parent?.children[this.parent.children.indexOf(this) + 1];
+    return this.parent?.children?.[this.parent.children.indexOf(this) + 1];
   }
 
   // for element and attribute
@@ -158,7 +160,7 @@ class Node {
   get attrMap() {
     return Object.fromEntries(
       // @ts-expect-error
-      this.attrs.map((attr) => [attr.fullName, attr.value])
+      this.attrs.map((attr) => [attr.fullName, attr.value]),
     );
   }
 }

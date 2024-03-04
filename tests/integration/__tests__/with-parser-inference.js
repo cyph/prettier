@@ -1,4 +1,5 @@
 import { outdent } from "outdent";
+
 import prettier from "../../config/prettier-entry.js";
 
 describe("infers postcss parser", () => {
@@ -22,13 +23,13 @@ describe("infers postcss parser with --list-different", () => {
 describe("infers parser from filename", () => {
   test("json from .prettierrc", async () => {
     expect(
-      await prettier.format("  {   }  ", { filepath: "x/y/.prettierrc" })
+      await prettier.format("  {   }  ", { filepath: "x/y/.prettierrc" }),
     ).toBe("{}\n");
   });
 
   test("json from .stylelintrc", async () => {
     expect(
-      await prettier.format("  {   }  ", { filepath: "x/y/.stylelintrc" })
+      await prettier.format("  {   }  ", { filepath: "x/y/.stylelintrc" }),
     ).toBe("{}\n");
   });
 
@@ -36,7 +37,7 @@ describe("infers parser from filename", () => {
     expect(
       await prettier.format("  extends:    ''  ", {
         filepath: "x/y/.stylelintrc",
-      })
+      }),
     ).toBe('extends: ""\n');
   });
 
@@ -44,7 +45,7 @@ describe("infers parser from filename", () => {
     expect(
       await prettier.format("let foo = ( x = 1 ) => x", {
         filepath: "x/y/Jakefile",
-      })
+      }),
     ).toBe("let foo = (x = 1) => x;\n");
   });
 
@@ -58,8 +59,8 @@ describe("infers parser from filename", () => {
                         "keepClassNames": false
                       }}
         `,
-        { filepath: "/path/to/.swcrc" }
-      )
+        { filepath: "/path/to/.swcrc" },
+      ),
     ).toBe(
       outdent`
         {
@@ -68,7 +69,7 @@ describe("infers parser from filename", () => {
             "keepClassNames": false
           }
         }
-      ` + "\n"
+      ` + "\n",
     );
   });
 
@@ -76,7 +77,7 @@ describe("infers parser from filename", () => {
     expect(
       await prettier.format("  {  '*':   'your-cmd'  }  ", {
         filepath: "/path/to/.lintstagedrc",
-      })
+      }),
     ).toBe('{ "*": "your-cmd" }\n');
   });
 
@@ -87,13 +88,13 @@ describe("infers parser from filename", () => {
           '*':
                  - your-cmd
         `,
-        { filepath: "/path/to/.lintstagedrc" }
-      )
+        { filepath: "/path/to/.lintstagedrc" },
+      ),
     ).toBe(
       outdent`
         "*":
           - your-cmd
-      ` + "\n"
+      ` + "\n",
     );
   });
 });

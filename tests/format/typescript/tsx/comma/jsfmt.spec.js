@@ -1,6 +1,6 @@
 const code = "const A = <T,>() => {}";
 
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -16,5 +16,5 @@ run_spec(
       undefined,
     ].map((filename) => ({ code, filename, name: filename ?? "unnamed" })),
   },
-  ["typescript"]
+  ["typescript"],
 );

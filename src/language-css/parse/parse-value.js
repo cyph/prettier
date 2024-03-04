@@ -1,4 +1,5 @@
 import PostcssValuesParser from "postcss-values-parser/lib/parser.js";
+
 import getFunctionArgumentsText from "../utils/get-function-arguments-text.js";
 import getValueRoot from "../utils/get-value-root.js";
 import hasSCSSInterpolation from "../utils/has-scss-interpolation.js";
@@ -44,8 +45,8 @@ function parseValueNode(valueNode, options) {
         parseSelector(
           getValueRoot(valueNode).text.slice(
             node.group.open.sourceIndex + 1,
-            node.group.close.sourceIndex
-          )
+            node.group.close.sourceIndex,
+          ),
         ),
       ];
     }

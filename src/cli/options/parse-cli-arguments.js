@@ -1,8 +1,9 @@
 import camelCase from "camelcase";
+
 import { pick } from "../utils.js";
+import createMinimistOptions from "./create-minimist-options.js";
 import { getContextOptionsWithoutPlugins } from "./get-context-options.js";
 import minimist from "./minimist.js";
-import createMinimistOptions from "./create-minimist-options.js";
 import normalizeCliOptions from "./normalize-cli-options.js";
 
 function parseArgv(rawArguments, detailedOptions, logger, keys) {
@@ -11,7 +12,7 @@ function parseArgv(rawArguments, detailedOptions, logger, keys) {
 
   if (keys) {
     detailedOptions = detailedOptions.filter((option) =>
-      keys.includes(option.name)
+      keys.includes(option.name),
     );
     argv = pick(argv, keys);
   }
@@ -26,7 +27,7 @@ function parseArgv(rawArguments, detailedOptions, logger, keys) {
         // Otherwise use camel case for readability
         // `--ignore-unknown` -> `ignoreUnknown`
         return [option.forwardToApi || camelCase(key), value];
-      })
+      }),
     ),
     _: normalized._?.map(String),
     get __raw() {
@@ -42,7 +43,7 @@ function parseArgvWithoutPlugins(rawArguments, logger, keys) {
     rawArguments,
     detailedOptionsWithoutPlugins,
     logger,
-    typeof keys === "string" ? [keys] : keys
+    typeof keys === "string" ? [keys] : keys,
   );
 }
 

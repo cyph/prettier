@@ -1,5 +1,6 @@
 import path from "node:path";
-import { PROJECT_ROOT, DIST_DIR, readJson, writeJson } from "../utils/index.js";
+
+import { DIST_DIR, PROJECT_ROOT, readJson, writeJson } from "../utils/index.js";
 
 const keysToKeep = [
   "name",
@@ -17,6 +18,7 @@ const keysToKeep = [
   "exports",
   "engines",
   "files",
+  "preferUnplugged",
 ];
 
 async function buildPackageJson({ file, files }) {
@@ -25,7 +27,7 @@ async function buildPackageJson({ file, files }) {
   const bin = files.find(
     (file) =>
       path.join(PROJECT_ROOT, packageJson.bin['cyph-prettier']) ===
-      path.join(PROJECT_ROOT, file.input)
+      path.join(PROJECT_ROOT, file.input),
   ).output.file;
 
   const overrides = {
@@ -43,6 +45,10 @@ async function buildPackageJson({ file, files }) {
       ".": {
         types: "./index.d.ts",
         require: "./index.cjs",
+        browser: {
+          import: "./standalone.mjs",
+          default: "./standalone.js",
+        },
         default: "./index.mjs",
       },
       "./*": "./*",
@@ -59,7 +65,7 @@ async function buildPackageJson({ file, files }) {
                 default: `./${file.output.file.replace(/\.js$/, ".mjs")}`,
               },
             ];
-          })
+          }),
       ),
       // Legacy entries
       // TODO: Remove bellow in v4
@@ -70,7 +76,7 @@ async function buildPackageJson({ file, files }) {
             (file) =>
               file.isPlugin &&
               file.output.format === "umd" &&
-              file.output.file !== "plugins/estree.js"
+              file.output.file !== "plugins/estree.js",
           )
           .flatMap((file) => {
             let basename = path.basename(file.output.file, ".js");
@@ -85,7 +91,7 @@ async function buildPackageJson({ file, files }) {
                 `./${file.output.file.replace(/\.js$/, ".mjs")}`,
               ],
             ];
-          })
+          }),
       ),
     },
     files: files.map(({ output: { file } }) => file).sort(),
@@ -97,14 +103,14 @@ async function buildPackageJson({ file, files }) {
 
   await writeJson(
     path.join(DIST_DIR, file.output.file),
-    Object.assign(pick(packageJson, keysToKeep), overrides)
+    Object.assign(pick(packageJson, keysToKeep), overrides),
   );
 }
 
 function pick(object, keys) {
   keys = new Set(keys);
   return Object.fromEntries(
-    Object.entries(object).filter(([key]) => keys.has(key))
+    Object.entries(object).filter(([key]) => keys.has(key)),
   );
 }
 

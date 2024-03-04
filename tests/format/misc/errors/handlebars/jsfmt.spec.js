@@ -1,4 +1,4 @@
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -45,5 +45,5 @@ run_spec(
       ].map((tag) => ({ name: tag, code: `<${tag}>` })),
     ],
   },
-  ["glimmer"]
+  ["glimmer"],
 );

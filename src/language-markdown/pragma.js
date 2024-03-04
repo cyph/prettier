@@ -11,7 +11,7 @@ function startWithPragma(text) {
       `{\\s*\\/\\*\\s*${pragma}\\s*\\*\\/\\s*}`,
       `<!--.*\r?\n[\\s\\S]*(^|\n)[^\\S\n]*${pragma}[^\\S\n]*($|\n)[\\s\\S]*\n.*-->`,
     ].join("|"),
-    "m"
+    "m",
   );
   const matched = text.match(regex);
   return matched?.index === 0;
@@ -28,4 +28,4 @@ const insertPragma = (text) => {
     : `${pragma}\n\n${extracted.content}`;
 };
 
-export { startWithPragma, hasPragma, insertPragma };
+export { hasPragma, insertPragma, startWithPragma };

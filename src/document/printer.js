@@ -1,25 +1,25 @@
 import { convertEndOfLineToChars } from "../common/end-of-line.js";
 import getStringWidth from "../utils/get-string-width.js";
+import { fill, hardlineWithoutBreakParent, indent } from "./builders.js";
 import {
-  DOC_TYPE_STRING,
-  DOC_TYPE_ARRAY,
-  DOC_TYPE_CURSOR,
-  DOC_TYPE_INDENT,
   DOC_TYPE_ALIGN,
-  DOC_TYPE_TRIM,
-  DOC_TYPE_GROUP,
+  DOC_TYPE_ARRAY,
+  DOC_TYPE_BREAK_PARENT,
+  DOC_TYPE_CURSOR,
   DOC_TYPE_FILL,
+  DOC_TYPE_GROUP,
   DOC_TYPE_IF_BREAK,
+  DOC_TYPE_INDENT,
   DOC_TYPE_INDENT_IF_BREAK,
+  DOC_TYPE_LABEL,
+  DOC_TYPE_LINE,
   DOC_TYPE_LINE_SUFFIX,
   DOC_TYPE_LINE_SUFFIX_BOUNDARY,
-  DOC_TYPE_LINE,
-  DOC_TYPE_LABEL,
-  DOC_TYPE_BREAK_PARENT,
+  DOC_TYPE_STRING,
+  DOC_TYPE_TRIM,
 } from "./constants.js";
-import { fill, indent, hardlineWithoutBreakParent } from "./builders.js";
-import { getDocParts, getDocType, propagateBreaks } from "./utils.js";
 import InvalidDocError from "./invalid-doc-error.js";
+import { getDocParts, getDocType, propagateBreaks } from "./utils.js";
 
 /** @typedef {typeof MODE_BREAK | typeof MODE_FLAT} Mode */
 /** @typedef {{ ind: any, doc: any, mode: Mode }} Command */
@@ -199,7 +199,7 @@ function fits(
   width,
   hasLineSuffix,
   groupModeMap,
-  mustBeFlat
+  mustBeFlat,
 ) {
   if (width === Number.POSITIVE_INFINITY) {
     return true;
@@ -473,7 +473,7 @@ function printDocToString(doc, options) {
           rem,
           lineSuffix.length > 0,
           groupModeMap,
-          true
+          true,
         );
 
         if (parts.length === 1) {
@@ -518,7 +518,7 @@ function printDocToString(doc, options) {
           rem,
           lineSuffix.length > 0,
           groupModeMap,
-          true
+          true,
         );
 
         if (firstAndSecondContentFits) {
@@ -538,8 +538,8 @@ function printDocToString(doc, options) {
             doc.type === DOC_TYPE_IF_BREAK
               ? doc.breakContents
               : doc.negate
-              ? doc.contents
-              : indent(doc.contents);
+                ? doc.contents
+                : indent(doc.contents);
           if (breakContents) {
             cmds.push({ ind, mode, doc: breakContents });
           }
@@ -549,8 +549,8 @@ function printDocToString(doc, options) {
             doc.type === DOC_TYPE_IF_BREAK
               ? doc.flatContents
               : doc.negate
-              ? indent(doc.contents)
-              : doc.contents;
+                ? indent(doc.contents)
+                : doc.contents;
           if (flatContents) {
             cmds.push({ ind, mode, doc: flatContents });
           }
@@ -638,7 +638,7 @@ function printDocToString(doc, options) {
   if (cursorPlaceholderIndex !== -1) {
     const otherCursorPlaceholderIndex = out.indexOf(
       CURSOR_PLACEHOLDER,
-      cursorPlaceholderIndex + 1
+      cursorPlaceholderIndex + 1,
     );
     const beforeCursor = out.slice(0, cursorPlaceholderIndex).join("");
     const aroundCursor = out

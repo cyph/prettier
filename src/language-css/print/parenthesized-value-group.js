@@ -1,26 +1,26 @@
-import isNextLineEmpty from "../../utils/is-next-line-empty.js";
-import isNonEmptyArray from "../../utils/is-non-empty-array.js";
 import {
+  dedent,
+  fill,
+  group,
+  hardline,
+  ifBreak,
+  indent,
   join,
   line,
-  hardline,
   softline,
-  group,
-  fill,
-  indent,
-  dedent,
-  ifBreak,
 } from "../../document/builders.js";
 import { getDocParts } from "../../document/utils.js";
+import isNextLineEmpty from "../../utils/is-next-line-empty.js";
+import isNonEmptyArray from "../../utils/is-non-empty-array.js";
+import { locEnd, locStart } from "../loc.js";
 import {
-  isURLFunctionNode,
-  isKeyValuePairNode,
-  isKeyInValuePairNode,
-  isSCSSMapItemNode,
   isConfigurationNode,
+  isKeyInValuePairNode,
+  isKeyValuePairNode,
+  isSCSSMapItemNode,
+  isURLFunctionNode,
   isVarFunctionNode,
 } from "../utils/index.js";
-import { locStart, locEnd } from "../loc.js";
 import { shouldPrintTrailingComma } from "./misc.js";
 
 function hasComma({ node, parent }, options) {
@@ -29,7 +29,7 @@ function hasComma({ node, parent }, options) {
       options.originalText
         .slice(locStart(node), locStart(parent.close))
         .trimEnd()
-        .endsWith(",")
+        .endsWith(","),
   );
 }
 
@@ -40,6 +40,10 @@ function printTrailingComma(path, options) {
 
   if (
     path.node.type !== "value-comment" &&
+    !(
+      path.node.type === "value-comma_group" &&
+      path.node.groups.every((group) => group.type === "value-comment")
+    ) &&
     shouldPrintTrailingComma(options) &&
     path.callParent(() => isSCSSMapItemNode(path, options))
   ) {
@@ -53,7 +57,7 @@ function printParenthesizedValueGroup(path, options, print) {
   const { node, parent } = path;
   const groupDocs = path.map(
     ({ node }) => (typeof node === "string" ? node : print()),
-    "groups"
+    "groups",
   );
 
   if (
@@ -131,7 +135,7 @@ function printParenthesizedValueGroup(path, options, print) {
     ],
     {
       shouldBreak,
-    }
+    },
   );
 
   return shouldDedent ? dedent(doc) : doc;
@@ -148,7 +152,7 @@ function shouldBreakList(path) {
     (node, key) =>
       key === "value" &&
       ((node.type === "css-decl" && !node.prop.startsWith("--")) ||
-        (node.type === "css-atrule" && node.variable))
+        (node.type === "css-atrule" && node.variable)),
   );
 }
 

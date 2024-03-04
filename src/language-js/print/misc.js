@@ -40,7 +40,7 @@ function printDefiniteToken(path) {
     path.match(
       undefined,
       (node, name) =>
-        name === "id" && node.type === "VariableDeclarator" && node.definite
+        name === "id" && node.type === "VariableDeclarator" && node.definite,
     )
     ? "!"
     : "";
@@ -124,13 +124,13 @@ function printTypeScriptAccessibilityToken(node) {
 }
 
 export {
-  printOptionalToken,
-  printDefiniteToken,
-  printDeclareToken,
-  printAbstractToken,
-  printFunctionTypeParameters,
-  printBindExpressionCallee,
-  printRestSpread,
   adjustClause,
+  printAbstractToken,
+  printBindExpressionCallee,
+  printDeclareToken,
+  printDefiniteToken,
+  printFunctionTypeParameters,
+  printOptionalToken,
+  printRestSpread,
   printTypeScriptAccessibilityToken,
 };

@@ -1,76 +1,77 @@
-import { printDanglingComments } from "../../main/comments/print.js";
-import hasNewline from "../../utils/has-newline.js";
 import {
+  group,
+  hardline,
+  indent,
   join,
   line,
-  hardline,
   softline,
-  group,
-  indent,
 } from "../../document/builders.js";
 import { replaceEndOfLine } from "../../document/utils.js";
+import { printDanglingComments } from "../../main/comments/print.js";
+import hasNewline from "../../utils/has-newline.js";
 import UnexpectedNodeError from "../../utils/unexpected-node-error.js";
-
+import { locEnd, locStart } from "../loc.js";
 import {
-  hasComment,
   CommentCheckFlags,
-  isNextLineEmpty,
-  needsHardlineAfterDanglingComment,
-  isCallExpression,
-  isMemberExpression,
+  hasComment,
   isArrayOrTupleExpression,
+  isCallExpression,
+  isLiteral,
+  isMemberExpression,
+  isMethod,
+  isNextLineEmpty,
   isObjectOrRecordExpression,
+  needsHardlineAfterDanglingComment,
   startsWithNoLookaheadToken,
 } from "../utils/index.js";
-import { locStart, locEnd } from "../loc.js";
 import isBlockComment from "../utils/is-block-comment.js";
-import {
-  printOptionalToken,
-  printBindExpressionCallee,
-  adjustClause,
-  printRestSpread,
-  printDefiniteToken,
-  printDeclareToken,
-} from "./misc.js";
-import {
-  printImportDeclaration,
-  printExportDeclaration,
-  printModuleSpecifier,
-} from "./module.js";
-import { printTernary } from "./ternary.js";
-import {
-  printTaggedTemplateLiteral,
-  printTemplateLiteral,
-} from "./template-literal.js";
 import { printArray } from "./array.js";
-import { printObject } from "./object.js";
+import { printArrowFunction } from "./arrow-function.js";
+import {
+  printAssignmentExpression,
+  printVariableDeclarator,
+} from "./assignment.js";
+import { printBinaryishExpression } from "./binaryish.js";
+import { printBlock, printBlockBody } from "./block.js";
+import { printCallExpression } from "./call-expression.js";
 import {
   printClass,
+  printClassBody,
   printClassMethod,
   printClassProperty,
-  printClassBody,
 } from "./class.js";
-import { printProperty } from "./property.js";
+import { printExpressionStatement } from "./expression-statement.js";
 import {
   printFunction,
   printMethod,
   printReturnStatement,
   printThrowStatement,
 } from "./function.js";
-import { printArrowFunction } from "./arrow-function.js";
-import { printCallExpression } from "./call-expression.js";
-import {
-  printVariableDeclarator,
-  printAssignmentExpression,
-} from "./assignment.js";
-import { printBinaryishExpression } from "./binaryish.js";
-import { printStatementSequence } from "./statement.js";
-import { printMemberExpression } from "./member.js";
-import { printBlock, printBlockBody } from "./block.js";
-import { printLiteral, isLiteral } from "./literal.js";
-import { printTypeAnnotationProperty } from "./type-annotation.js";
-import { printExpressionStatement } from "./expression-statement.js";
 import { printHtmlBinding } from "./html-binding.js";
+import { printLiteral } from "./literal.js";
+import { printMemberExpression } from "./member.js";
+import {
+  adjustClause,
+  printBindExpressionCallee,
+  printDeclareToken,
+  printDefiniteToken,
+  printOptionalToken,
+  printRestSpread,
+} from "./misc.js";
+import {
+  printExportDeclaration,
+  printImportDeclaration,
+  printModuleSpecifier,
+} from "./module.js";
+import { printObject } from "./object.js";
+import { printProperty } from "./property.js";
+import { printStatementSequence } from "./statement.js";
+import {
+  printTaggedTemplateLiteral,
+  printTemplateLiteral,
+} from "./template-literal.js";
+import { printTernary } from "./ternary.js";
+import { printTypeAnnotationProperty } from "./type-annotation.js";
 
 /**
  * @typedef {import("../../common/ast-path.js").default} AstPath
@@ -152,8 +153,8 @@ function printEstree(path, options, print, args) {
 
       parts.push(
         group(
-          indent([softline, printBindExpressionCallee(path, options, print)])
-        )
+          indent([softline, printBindExpressionCallee(path, options, print)]),
+        ),
       );
 
       return parts;
@@ -201,13 +202,13 @@ function printEstree(path, options, print, args) {
           // avoid printing `await (await` on one line
           const parentAwaitOrBlock = path.findAncestor(
             (node) =>
-              node.type === "AwaitExpression" || node.type === "BlockStatement"
+              node.type === "AwaitExpression" || node.type === "BlockStatement",
           );
           if (
             parentAwaitOrBlock?.type !== "AwaitExpression" ||
             !startsWithNoLookaheadToken(
               parentAwaitOrBlock.argument,
-              (leftmostNode) => leftmostNode === node
+              (leftmostNode) => leftmostNode === node,
             )
           ) {
             return group(parts);
@@ -252,13 +253,15 @@ function printEstree(path, options, print, args) {
     case "ObjectPattern":
     case "RecordExpression":
       return printObject(path, options, print);
-    // Babel 6
-    case "ObjectProperty": // Non-standard AST node type.
     case "Property":
-      if (node.method || node.kind === "get" || node.kind === "set") {
+      if (isMethod(node)) {
         return printMethod(path, options, print);
       }
       return printProperty(path, options, print);
+    // Babel
+    case "ObjectProperty":
+      return printProperty(path, options, print);
+    // Babel
     case "ObjectMethod":
       return printMethod(path, options, print);
     case "Decorator":
@@ -303,7 +306,7 @@ function printEstree(path, options, print, args) {
 
       if (hasComment(node.argument)) {
         parts.push(
-          group(["(", indent([softline, print("argument")]), softline, ")"])
+          group(["(", indent([softline, print("argument")]), softline, ")"]),
         );
       } else {
         parts.push(print("argument"));
@@ -319,7 +322,7 @@ function printEstree(path, options, print, args) {
 
       return parts;
     case "ConditionalExpression":
-      return printTernary(path, options, print);
+      return printTernary(path, options, print, args);
     case "VariableDeclaration": {
       const printed = path.map(print, "declarations");
 
@@ -353,7 +356,7 @@ function printEstree(path, options, print, args) {
               ",",
               hasValue && !isParentForLoop ? hardline : line,
               p,
-            ])
+            ]),
         ),
       ];
 
@@ -371,12 +374,12 @@ function printEstree(path, options, print, args) {
         adjustClause(node.body, print("body")),
       ]);
     case "IfStatement": {
-      const con = adjustClause(node.consequent, print("consequent"));
+      const consequent = adjustClause(node.consequent, print("consequent"));
       const opening = group([
         "if (",
         group([indent([softline, print("test")]), softline]),
         ")",
-        con,
+        consequent,
       ]);
 
       parts.push(opening);
@@ -385,7 +388,7 @@ function printEstree(path, options, print, args) {
         const commentOnOwnLine =
           hasComment(
             node.consequent,
-            CommentCheckFlags.Trailing | CommentCheckFlags.Line
+            CommentCheckFlags.Trailing | CommentCheckFlags.Line,
           ) || needsHardlineAfterDanglingComment(node);
         const elseOnSameLine =
           node.consequent.type === "BlockStatement" && !commentOnOwnLine;
@@ -394,7 +397,7 @@ function printEstree(path, options, print, args) {
         if (hasComment(node, CommentCheckFlags.Dangling)) {
           parts.push(
             printDanglingComments(path, options),
-            commentOnOwnLine ? hardline : " "
+            commentOnOwnLine ? hardline : " ",
           );
         }
 
@@ -405,9 +408,9 @@ function printEstree(path, options, print, args) {
             adjustClause(
               node.alternate,
               print("alternate"),
-              node.alternate.type === "IfStatement"
-            )
-          )
+              node.alternate.type === "IfStatement",
+            ),
+          ),
         );
       }
 
@@ -491,7 +494,7 @@ function printEstree(path, options, print, args) {
         "while (",
         group([indent([softline, print("test")]), softline]),
         ")",
-        semi
+        semi,
       );
 
       return parts;
@@ -533,7 +536,7 @@ function printEstree(path, options, print, args) {
             (comment.trailing &&
               hasNewline(options.originalText, locStart(comment), {
                 backwards: true,
-              }))
+              })),
         );
         const param = print("param");
 
@@ -568,8 +571,8 @@ function printEstree(path, options, print, args) {
                     print(),
                     !isLast && isNextLineEmpty(node, options) ? hardline : "",
                   ],
-                  "cases"
-                )
+                  "cases",
+                ),
               ),
             ])
           : "",
@@ -588,7 +591,7 @@ function printEstree(path, options, print, args) {
       }
 
       const consequent = node.consequent.filter(
-        (node) => node.type !== "EmptyStatement"
+        (node) => node.type !== "EmptyStatement",
       );
 
       if (consequent.length > 0) {
@@ -597,7 +600,7 @@ function printEstree(path, options, print, args) {
         parts.push(
           consequent.length === 1 && consequent[0].type === "BlockStatement"
             ? [" ", cons]
-            : indent([hardline, cons])
+            : indent([hardline, cons]),
         );
       }
 

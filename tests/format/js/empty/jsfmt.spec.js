@@ -1,4 +1,4 @@
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -27,5 +27,5 @@ run_spec(
       "\n;/* comment */\n",
     ],
   },
-  ["babel", "flow", "typescript"]
+  ["babel", "flow", "typescript"],
 );

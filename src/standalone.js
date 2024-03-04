@@ -3,7 +3,7 @@ import { getSupportInfo as getSupportInfoWithoutPlugins } from "./main/support.j
 
 function withPlugins(
   fn,
-  optionsArgumentIndex = 1 // Usually `options` is the 2nd argument
+  optionsArgumentIndex = 1, // Usually `options` is the 2nd argument
 ) {
   // Returns Promises to consistent with functions in `index.js`
   // eslint-disable-next-line require-await
@@ -45,12 +45,12 @@ const debugApis = {
 };
 
 export {
-  formatWithCursor,
-  format,
-  check,
-  getSupportInfo,
   debugApis as __debug,
+  check,
+  format,
+  formatWithCursor,
+  getSupportInfo,
 };
-export * as util from "./utils/public.js";
 export * as doc from "./document/public.js";
 export { default as version } from "./main/version.evaluate.cjs";
+export * as util from "./utils/public.js";

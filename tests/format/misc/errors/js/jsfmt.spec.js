@@ -1,6 +1,6 @@
 import { outdent } from "outdent";
 
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -46,5 +46,5 @@ run_spec(
       "0o16432m;",
     ],
   },
-  ["babel"]
+  ["babel"],
 );

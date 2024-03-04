@@ -1,16 +1,16 @@
 import {
-  indent,
-  line,
-  hardline,
   group,
+  hardline,
+  indent,
   label,
+  line,
 } from "../../document/builders.js";
 import { mapDoc } from "../../document/utils.js";
 import {
   printTemplateExpressions,
   uncookTemplateElementValue,
 } from "../print/template-literal.js";
-import { isAngularComponentTemplate, hasLanguageComment } from "./utils.js";
+import { hasLanguageComment, isAngularComponentTemplate } from "./utils.js";
 
 // The counter is needed to distinguish nested embeds.
 let htmlTemplateLiteralCounter = 0;
@@ -26,7 +26,7 @@ async function printEmbedHtmlLike(parser, textToDoc, print, path, options) {
     .map((quasi, index, quasis) =>
       index === quasis.length - 1
         ? quasi.value.cooked
-        : quasi.value.cooked + composePlaceholder(index)
+        : quasi.value.cooked + composePlaceholder(index),
     )
     .join("");
 
@@ -77,8 +77,8 @@ async function printEmbedHtmlLike(parser, textToDoc, print, path, options) {
     options.htmlWhitespaceSensitivity === "ignore"
       ? hardline
       : leadingWhitespace && trailingWhitespace
-      ? line
-      : null;
+        ? line
+        : null;
 
   if (linebreak) {
     return group(["`", indent([linebreak, group(contentDoc)]), linebreak, "`"]);
@@ -92,7 +92,7 @@ async function printEmbedHtmlLike(parser, textToDoc, print, path, options) {
       topLevelCount > 1 ? indent(group(contentDoc)) : group(contentDoc),
       trailingWhitespace,
       "`",
-    ])
+    ]),
   );
 }
 
@@ -102,14 +102,14 @@ async function printEmbedHtmlLike(parser, textToDoc, print, path, options) {
  */
 function isHtml(path) {
   return (
-    hasLanguageComment(path.node, "HTML") ||
+    hasLanguageComment(path, "HTML") ||
     path.match(
       (node) => node.type === "TemplateLiteral",
       (node, name) =>
         node.type === "TaggedTemplateExpression" &&
         node.tag.type === "Identifier" &&
         node.tag.name === "html" &&
-        name === "quasi"
+        name === "quasi",
     )
   );
 }

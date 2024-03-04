@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import fs from "node:fs/promises";
+
 import { execa } from "execa";
 
 const CSPELL_CONFIG_FILE = new URL("../cspell.json", import.meta.url);
@@ -42,7 +43,7 @@ if (removed.length > 0) {
   console.log(
     `${removed.length} words removed: \n${removed
       .map((word) => ` - ${word}`)
-      .join("\n")}`
+      .join("\n")}`,
   );
 }
 const added = words.filter((word) => !original.includes(word));
@@ -50,7 +51,7 @@ if (added.length > 0) {
   console.log(
     `${added.length} words added: \n${added
       .map((word) => ` - ${word}`)
-      .join("\n")}`
+      .join("\n")}`,
   );
 }
 

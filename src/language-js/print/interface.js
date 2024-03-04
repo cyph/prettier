@@ -1,8 +1,8 @@
+import { group, ifBreak, indent, join, line } from "../../document/builders.js";
 import isNonEmptyArray from "../../utils/is-non-empty-array.js";
-import { join, line, group, indent, ifBreak } from "../../document/builders.js";
-import { hasComment, identity, CommentCheckFlags } from "../utils/index.js";
-import { getTypeParametersGroupId } from "./type-parameters.js";
+import { CommentCheckFlags, hasComment, identity } from "../utils/index.js";
 import { printDeclareToken } from "./misc.js";
+import { getTypeParametersGroupId } from "./type-parameters.js";
 
 /**
  * @typedef {import("../../document/builders.js").Doc} Doc
@@ -30,7 +30,7 @@ function printInterface(path, options, print) {
     node.typeParameters &&
     !hasComment(
       node.typeParameters,
-      CommentCheckFlags.Trailing | CommentCheckFlags.Line
+      CommentCheckFlags.Trailing | CommentCheckFlags.Line,
     );
 
   if (isNonEmptyArray(node.extends)) {
@@ -42,8 +42,8 @@ function printInterface(path, options, print) {
         : line,
       "extends ",
       (node.extends.length === 1 ? identity : indent)(
-        join([",", line], path.map(print, "extends"))
-      )
+        join([",", line], path.map(print, "extends")),
+      ),
     );
   }
 

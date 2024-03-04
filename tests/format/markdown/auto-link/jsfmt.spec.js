@@ -68,10 +68,10 @@ const wrappers = [
 
 const cases = urls.flatMap((url) => wrappers.map((fn) => fn(url)));
 
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: cases.map((code) => ({ code, name: code })),
   },
-  ["markdown"]
+  ["markdown"],
 );

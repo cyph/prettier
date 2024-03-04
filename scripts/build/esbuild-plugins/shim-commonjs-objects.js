@@ -1,4 +1,5 @@
 import fs from "node:fs";
+
 import { outdent } from "outdent";
 
 export default function esbuildPluginShimCommonjsObjects() {
@@ -28,7 +29,7 @@ export default function esbuildPluginShimCommonjsObjects() {
             const __dirname = __prettierDirname(__filename);
 
             ${text}
-          `
+          `,
         );
       });
     },

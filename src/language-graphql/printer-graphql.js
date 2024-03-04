@@ -1,18 +1,18 @@
 import {
-  join,
+  group,
   hardline,
+  ifBreak,
+  indent,
+  join,
   line,
   softline,
-  group,
-  indent,
-  ifBreak,
 } from "../document/builders.js";
 import isNextLineEmpty from "../utils/is-next-line-empty.js";
 import isNonEmptyArray from "../utils/is-non-empty-array.js";
 import UnexpectedNodeError from "../utils/unexpected-node-error.js";
-import { insertPragma } from "./pragma.js";
-import { locStart, locEnd } from "./loc.js";
 import getVisitorKeys from "./get-visitor-keys.js";
+import { locEnd, locStart } from "./loc.js";
+import { insertPragma } from "./pragma.js";
 import printDescription from "./print/description.js";
 
 function genericPrint(path, options, print) {
@@ -74,7 +74,7 @@ function genericPrint(path, options, print) {
                 softline,
                 join(
                   [ifBreak("", ", "), softline],
-                  printSequence(path, options, print, "arguments")
+                  printSequence(path, options, print, "arguments"),
                 ),
               ]),
               softline,
@@ -164,7 +164,7 @@ function genericPrint(path, options, print) {
                 softline,
                 join(
                   [ifBreak("", ", "), softline],
-                  printSequence(path, options, print, "arguments")
+                  printSequence(path, options, print, "arguments"),
                 ),
               ]),
               softline,
@@ -241,7 +241,7 @@ function genericPrint(path, options, print) {
                 softline,
                 join(
                   [ifBreak("", ", "), softline],
-                  printSequence(path, options, print, "arguments")
+                  printSequence(path, options, print, "arguments"),
                 ),
               ]),
               softline,
@@ -266,7 +266,7 @@ function genericPrint(path, options, print) {
                 softline,
                 join(
                   [ifBreak("", ", "), softline],
-                  printSequence(path, options, print, "arguments")
+                  printSequence(path, options, print, "arguments"),
                 ),
               ]),
               softline,
@@ -327,7 +327,7 @@ function genericPrint(path, options, print) {
                 hardline,
                 join(
                   hardline,
-                  printSequence(path, options, print, "operationTypes")
+                  printSequence(path, options, print, "operationTypes"),
                 ),
               ]),
               hardline,
@@ -347,7 +347,7 @@ function genericPrint(path, options, print) {
               hardline,
               join(
                 hardline,
-                printSequence(path, options, print, "operationTypes")
+                printSequence(path, options, print, "operationTypes"),
               ),
             ])
           : "",
@@ -384,7 +384,7 @@ function genericPrint(path, options, print) {
                 " =",
                 ifBreak("", " "),
                 indent([
-                  ifBreak([line, "  "]),
+                  ifBreak([line, "| "]),
                   join([line, "| "], path.map(print, "types")),
                 ]),
               ]
@@ -470,7 +470,7 @@ function printInterfaces(path, options, print) {
     if (nextInterfaceNode) {
       const textBetween = options.originalText.slice(
         interfaceNode.loc.end,
-        nextInterfaceNode.loc.start
+        nextInterfaceNode.loc.start,
       );
       const hasComment = textBetween.includes("#");
 
@@ -492,7 +492,7 @@ function printVariableDefinitions(path, print) {
       softline,
       join(
         [ifBreak("", ", "), softline],
-        path.map(print, "variableDefinitions")
+        path.map(print, "variableDefinitions"),
       ),
     ]),
     softline,
@@ -512,7 +512,7 @@ clean.ignoredProperties = new Set(["loc", "comments"]);
 function hasPrettierIgnore(path) {
   const { node } = path;
   return node?.comments?.some(
-    (comment) => comment.value.trim() === "prettier-ignore"
+    (comment) => comment.value.trim() === "prettier-ignore",
   );
 }
 

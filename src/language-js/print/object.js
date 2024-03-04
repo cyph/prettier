@@ -1,28 +1,27 @@
-import { printDanglingComments } from "../../main/comments/print.js";
 import {
+  group,
+  hardline,
+  ifBreak,
+  indent,
   line,
   softline,
-  group,
-  indent,
-  ifBreak,
-  hardline,
 } from "../../document/builders.js";
-import hasNewlineInRange from "../../utils/has-newline-in-range.js";
+import { printDanglingComments } from "../../main/comments/print.js";
 import hasNewline from "../../utils/has-newline.js";
+import hasNewlineInRange from "../../utils/has-newline-in-range.js";
 import isNonEmptyArray from "../../utils/is-non-empty-array.js";
+import { locEnd, locStart } from "../loc.js";
 import {
-  shouldPrintComma,
-  hasComment,
-  getComments,
   CommentCheckFlags,
+  getComments,
+  hasComment,
   isNextLineEmpty,
   isObjectType,
+  shouldPrintComma,
 } from "../utils/index.js";
-import { locStart, locEnd } from "../loc.js";
-
-import { printOptionalToken } from "./misc.js";
-import { shouldHugTheOnlyFunctionParameter } from "./function-parameters.js";
 import { printHardlineAfterHeritage } from "./class.js";
+import { shouldHugTheOnlyFunctionParameter } from "./function-parameters.js";
+import { printOptionalToken } from "./misc.js";
 import { printTypeAnnotationProperty } from "./type-annotation.js";
 
 /** @typedef {import("../../document/builders.js").Doc} Doc */
@@ -42,8 +41,8 @@ function printObject(path, options, print) {
     node.type === "TSTypeLiteral" || isEnumBody
       ? "members"
       : node.type === "TSInterfaceBody"
-      ? "body"
-      : "properties",
+        ? "body"
+        : "properties",
   ];
   if (isTypeAnnotation) {
     fields.push("indexers", "callProperties", "internalSlots");
@@ -59,8 +58,8 @@ function printObject(path, options, print) {
         printed: print(),
         loc: locStart(node),
       }),
-      field
-    )
+      field,
+    ),
   );
 
   if (fields.length > 1) {
@@ -91,21 +90,21 @@ function printObject(path, options, print) {
         (property) =>
           property.value &&
           (property.value.type === "ObjectPattern" ||
-            property.value.type === "ArrayPattern")
+            property.value.type === "ArrayPattern"),
       )) ||
     (node.type !== "ObjectPattern" &&
       propsAndLoc.length > 0 &&
       hasNewlineInRange(
         options.originalText,
         locStart(node),
-        propsAndLoc[0].loc
+        propsAndLoc[0].loc,
       ));
 
   const separator = isFlowInterfaceLikeBody
     ? ";"
     : node.type === "TSInterfaceBody" || node.type === "TSTypeLiteral"
-    ? ifBreak(semi, ";")
-    : ",";
+      ? ifBreak(semi, ";")
+      : ",";
   const leftBrace =
     node.type === "RecordExpression" ? "#{" : node.exact ? "{|" : "{";
   const rightBrace = node.exact ? "|}" : "}";
@@ -188,7 +187,7 @@ function printObject(path, options, print) {
         canHaveTrailingSeparator &&
           (separator !== "," || shouldPrintComma(options))
           ? separator
-          : ""
+          : "",
       ),
       options.bracketSpacing ? line : softline,
       rightBrace,
@@ -202,21 +201,22 @@ function printObject(path, options, print) {
   // type
   if (
     path.match(
-      (node) => node.type === "ObjectPattern" && !node.decorators,
-      shouldHugTheOnlyParameter
+      (node) =>
+        node.type === "ObjectPattern" && !isNonEmptyArray(node.decorators),
+      shouldHugTheOnlyParameter,
     ) ||
     (isObjectType(node) &&
       (path.match(
         undefined,
         (node, name) => name === "typeAnnotation",
         (node, name) => name === "typeAnnotation",
-        shouldHugTheOnlyParameter
+        shouldHugTheOnlyParameter,
       ) ||
         path.match(
           undefined,
           (node, name) =>
             node.type === "FunctionTypeParam" && name === "typeAnnotation",
-          shouldHugTheOnlyParameter
+          shouldHugTheOnlyParameter,
         ))) ||
     // Assignment printing logic (printAssignment) is responsible
     // for adding a group if needed
@@ -225,7 +225,7 @@ function printObject(path, options, print) {
         (node) => node.type === "ObjectPattern",
         (node) =>
           node.type === "AssignmentExpression" ||
-          node.type === "VariableDeclarator"
+          node.type === "VariableDeclarator",
       ))
   ) {
     return content;

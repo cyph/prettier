@@ -1,28 +1,27 @@
-import { printDanglingComments } from "../../main/comments/print.js";
 import {
+  fill,
+  group,
+  hardline,
+  ifBreak,
+  indent,
   line,
   softline,
-  hardline,
-  group,
-  indent,
-  ifBreak,
-  fill,
 } from "../../document/builders.js";
+import { printDanglingComments } from "../../main/comments/print.js";
 import hasNewline from "../../utils/has-newline.js";
 import isNextLineEmptyAfterIndex from "../../utils/is-next-line-empty.js";
 import skipInlineComment from "../../utils/skip-inline-comment.js";
 import skipTrailingComment from "../../utils/skip-trailing-comment.js";
+import { locEnd, locStart } from "../loc.js";
 import {
-  shouldPrintComma,
-  hasComment,
   CommentCheckFlags,
-  isNumericLiteral,
-  isSignedNumericLiteral,
+  hasComment,
   isArrayOrTupleExpression,
+  isNumericLiteral,
   isObjectOrRecordExpression,
+  isSignedNumericLiteral,
+  shouldPrintComma,
 } from "../utils/index.js";
-import { locStart, locEnd } from "../loc.js";
-
 import { printOptionalToken } from "./misc.js";
 import { printTypeAnnotationProperty } from "./type-annotation.js";
 
@@ -60,12 +59,12 @@ function printArray(path, options, print) {
     node.type === "TupleTypeAnnotation" && node.types
       ? "types"
       : node.type === "TSTupleType" || node.type === "TupleTypeAnnotation"
-      ? "elementTypes"
-      : "elements";
+        ? "elementTypes"
+        : "elements";
   const elements = node[elementsProperty];
   if (elements.length === 0) {
     parts.push(
-      printEmptyArrayElements(path, options, openBracket, closeBracket)
+      printEmptyArrayElements(path, options, openBracket, closeBracket),
     );
   } else {
     const lastElem = elements.at(-1);
@@ -114,12 +113,12 @@ function printArray(path, options, print) {
     const trailingComma = !canHaveTrailingComma
       ? ""
       : needsForcedTrailingComma
-      ? ","
-      : !shouldPrintComma(options)
-      ? ""
-      : shouldUseConciseFormatting
-      ? ifBreak(",", "", { groupId })
-      : ifBreak(",");
+        ? ","
+        : !shouldPrintComma(options)
+          ? ""
+          : shouldUseConciseFormatting
+            ? ifBreak(",", "", { groupId })
+            : ifBreak(",");
 
     parts.push(
       group(
@@ -138,14 +137,14 @@ function printArray(path, options, print) {
           softline,
           closeBracket,
         ],
-        { shouldBreak, id: groupId }
-      )
+        { shouldBreak, id: groupId },
+      ),
     );
   }
 
   parts.push(
     printOptionalToken(path),
-    printTypeAnnotationProperty(path, print)
+    printTypeAnnotationProperty(path, print),
   );
 
   return parts;
@@ -166,8 +165,8 @@ function isConciselyPrintedArray(node, options) {
           (comment) =>
             !hasNewline(options.originalText, locStart(comment), {
               backwards: true,
-            })
-        )
+            }),
+        ),
     )
   );
 }
@@ -213,8 +212,8 @@ function printArrayElementsConcisely(path, options, print, trailingComma) {
         isLineAfterElementEmpty(path, options)
           ? [hardline, hardline]
           : hasComment(next, CommentCheckFlags.Leading | CommentCheckFlags.Line)
-          ? hardline
-          : line
+            ? hardline
+            : line,
       );
     }
   }, "elements");
@@ -222,4 +221,4 @@ function printArrayElementsConcisely(path, options, print, trailingComma) {
   return fill(parts);
 }
 
-export { printArray, isConciselyPrintedArray };
+export { isConciselyPrintedArray, printArray };

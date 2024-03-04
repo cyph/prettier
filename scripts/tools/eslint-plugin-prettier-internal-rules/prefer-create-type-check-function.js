@@ -164,9 +164,7 @@ module.exports = {
     fixable: "code",
   },
   create(context) {
-    const { ignoreSingleType, onlyTopLevelFunctions } = {
-      ignoreSingleType: false,
-      onlyTopLevelFunctions: false,
+    const { ignoreSingleType = false, onlyTopLevelFunctions = false } = {
       ...context.options[0],
     };
     const sourceCode = context.getSourceCode();
@@ -218,7 +216,7 @@ module.exports = {
             : types.reduce(
                 (count, { node }) =>
                   count + sourceCode.getCommentsInside(node).length,
-                0
+                0,
               );
 
         if (commentsInFunction === commentsInTypes) {
@@ -230,8 +228,8 @@ module.exports = {
                     .map(
                       ({ type, node }) =>
                         `${type === "single" ? "" : "..."}${sourceCode.getText(
-                          node
-                        )}`
+                          node,
+                        )}`,
                     )
                     .join(", ")}]`;
 
@@ -248,7 +246,7 @@ module.exports = {
               ) {
                 return fixer.replaceText(
                   functionNode.parent,
-                  `${text}\nexport default ${functionName};`
+                  `${text}\nexport default ${functionName};`,
                 );
               }
             }

@@ -1,13 +1,15 @@
 import fs from "node:fs";
-import { execa } from "execa";
+
 import chalk from "chalk";
+import { execa } from "execa";
 import semver from "semver";
+
 import {
-  waitForEnter,
-  runYarn,
-  logPromise,
   getBlogPostInfo,
   getChangelogContent,
+  logPromise,
+  runYarn,
+  waitForEnter,
 } from "../utils.js";
 
 function writeChangelog(params) {
@@ -31,8 +33,9 @@ export default async function updateChangelog({
   dry,
   version,
   previousVersion,
+  next,
 }) {
-  if (dry) {
+  if (dry || next) {
     return;
   }
 
@@ -51,10 +54,10 @@ export default async function updateChangelog({
     }
     console.warn(
       `${chalk.yellow("warning")} The file ${chalk.bold(
-        blogPost.file
+        blogPost.file,
       )} doesn't exist, but it will be referenced in ${chalk.bold(
-        "CHANGELOG.md"
-      )}. Make sure to create it later.`
+        "CHANGELOG.md",
+      )}. Make sure to create it later.`,
     );
   } else {
     const body = await getChangelogForPatch({
@@ -71,6 +74,6 @@ export default async function updateChangelog({
   await waitForEnter();
   await logPromise(
     "Re-running Prettier on docs",
-    runYarn(["lint:prettier", "--write"])
+    runYarn(["lint:prettier", "--write"]),
   );
 }

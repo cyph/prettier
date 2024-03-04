@@ -1,31 +1,32 @@
-import getNextNonSpaceNonCommentCharacter from "../../utils/get-next-non-space-non-comment-character.js";
-import { printDanglingComments } from "../../main/comments/print.js";
+import { ArgExpansionBailout } from "../../common/errors.js";
 import {
-  line,
-  hardline,
-  softline,
   group,
-  indent,
+  hardline,
   ifBreak,
+  indent,
+  line,
+  softline,
 } from "../../document/builders.js";
 import { removeLines, willBreak } from "../../document/utils.js";
+import { printDanglingComments } from "../../main/comments/print.js";
+import getNextNonSpaceNonCommentCharacter from "../../utils/get-next-non-space-non-comment-character.js";
+import isNonEmptyArray from "../../utils/is-non-empty-array.js";
+import { locEnd } from "../loc.js";
 import {
   getFunctionParameters,
-  iterateFunctionParametersPath,
+  hasComment,
+  hasRestParameter,
+  isArrayOrTupleExpression,
+  isFlowObjectTypePropertyAFunction,
+  isNextLineEmpty,
+  isObjectOrRecordExpression,
+  isObjectType,
   isSimpleType,
   isTestCall,
   isTypeAnnotationAFunction,
-  isObjectType,
-  isObjectTypePropertyAFunction,
-  hasRestParameter,
+  iterateFunctionParametersPath,
   shouldPrintComma,
-  hasComment,
-  isNextLineEmpty,
-  isArrayOrTupleExpression,
-  isObjectOrRecordExpression,
 } from "../utils/index.js";
-import { locEnd } from "../loc.js";
-import { ArgExpansionBailout } from "../../common/errors.js";
 import { printFunctionTypeParameters } from "./misc.js";
 
 /** @typedef {import("../../common/ast-path.js").default} AstPath */
@@ -36,7 +37,7 @@ function printFunctionParameters(
   options,
   expandArg,
   printTypeParams,
-  spaces
+  spaces,
 ) {
   const functionNode = path.node;
   const parameters = getFunctionParameters(functionNode);
@@ -55,7 +56,7 @@ function printFunctionParameters(
         filter: (comment) =>
           getNextNonSpaceNonCommentCharacter(
             options.originalText,
-            locEnd(comment)
+            locEnd(comment),
           ) === ")",
       }),
       endParen,
@@ -110,7 +111,9 @@ function printFunctionParameters(
   //   b,
   //   c
   // }) {}
-  const hasNotParameterDecorator = parameters.every((node) => !node.decorators);
+  const hasNotParameterDecorator = parameters.every(
+    (node) => !isNonEmptyArray(node.decorators),
+  );
   if (shouldHugParameters && hasNotParameterDecorator) {
     return [typeParams, startParen, ...printed, endParen];
   }
@@ -121,11 +124,10 @@ function printFunctionParameters(
   }
 
   const isFlowShorthandWithOneArg =
-    (isObjectTypePropertyAFunction(parent) ||
+    (isFlowObjectTypePropertyAFunction(parent) ||
       isTypeAnnotationAFunction(parent) ||
       parent.type === "TypeAlias" ||
       parent.type === "UnionTypeAnnotation" ||
-      parent.type === "TSUnionType" ||
       parent.type === "IntersectionTypeAnnotation" ||
       (parent.type === "FunctionTypeAnnotation" &&
         parent.returnType === functionNode)) &&
@@ -152,7 +154,7 @@ function printFunctionParameters(
     ifBreak(
       !hasRestParameter(functionNode) && shouldPrintComma(options, "all")
         ? ","
-        : ""
+        : "",
     ),
     softline,
     endParen,
@@ -279,7 +281,7 @@ function isDecoratedFunction(path) {
         node.left.property.name === "exports"),
     (node) =>
       node.type !== "VariableDeclaration" ||
-      (node.kind === "const" && node.declarations.length === 1)
+      (node.kind === "const" && node.declarations.length === 1),
   );
 }
 
@@ -293,7 +295,7 @@ function shouldBreakFunctionParameters(functionNode) {
 
 export {
   printFunctionParameters,
-  shouldHugTheOnlyFunctionParameter,
-  shouldGroupFunctionParameters,
   shouldBreakFunctionParameters,
+  shouldGroupFunctionParameters,
+  shouldHugTheOnlyFunctionParameter,
 };

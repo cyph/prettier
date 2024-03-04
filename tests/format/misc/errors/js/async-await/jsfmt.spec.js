@@ -1,6 +1,6 @@
 import { outdent } from "outdent";
 
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -19,10 +19,10 @@ run_spec(
       "async({ foo33 = 1 });",
     ],
   },
-  ["babel", "acorn", "espree", "meriyah", "flow"]
+  ["babel", "acorn", "espree", "meriyah", "flow"],
 );
 
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -30,5 +30,5 @@ run_spec(
       "async (x = await (2)) => {};",
     ],
   },
-  ["babel", "acorn", "espree", "flow"]
+  ["babel", "acorn", "espree", "flow"],
 );

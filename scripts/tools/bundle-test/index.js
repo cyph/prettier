@@ -1,9 +1,11 @@
-import url from "node:url";
-import path from "node:path";
 import { createRequire } from "node:module";
+import path from "node:path";
+import url from "node:url";
+
 import webpack from "webpack";
-import { DIST_DIR } from "../../utils/index.js";
+
 import files from "../../build/config.js";
+import { DIST_DIR } from "../../utils/index.js";
 
 function runWebpack(config) {
   return new Promise((resolve, reject) => {
@@ -27,7 +29,7 @@ function runWebpack(config) {
 }
 
 const TEMPORARY_DIRECTORY = url.fileURLToPath(
-  new URL("./.tmp", import.meta.url)
+  new URL("./.tmp", import.meta.url),
 );
 
 /* `require` in `parser-typescript.js`, #12338 */

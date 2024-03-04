@@ -1,22 +1,22 @@
 import { diffArrays } from "diff";
 
-import { hardline, addAlignmentToDoc } from "../document/builders.js";
-import { printDocToString as printDocToStringWithoutNormalizeOptions } from "../document/printer.js";
-import { printDocToDebug } from "../document/debug.js";
-import getAlignmentSize from "../utils/get-alignment-size.js";
 import {
-  guessEndOfLine,
   convertEndOfLineToChars,
   countEndOfLineChars,
+  guessEndOfLine,
   normalizeEndOfLine,
 } from "../common/end-of-line.js";
-import normalizeFormatOptions from "./normalize-format-options.js";
-import massageAst from "./massage-ast.js";
-import { resolveParser } from "./parser-and-printer.js";
-import parseText from "./parse.js";
-import { printAstToDoc, prepareToPrint } from "./ast-to-doc.js";
-import { calculateRange } from "./range-util.js";
+import { addAlignmentToDoc, hardline } from "../document/builders.js";
+import { printDocToDebug } from "../document/debug.js";
+import { printDocToString as printDocToStringWithoutNormalizeOptions } from "../document/printer.js";
+import getAlignmentSize from "../utils/get-alignment-size.js";
+import { prepareToPrint, printAstToDoc } from "./ast-to-doc.js";
 import getCursorNode from "./get-cursor-node.js";
+import massageAst from "./massage-ast.js";
+import normalizeFormatOptions from "./normalize-format-options.js";
+import parseText from "./parse.js";
+import { resolveParser } from "./parser-and-printer.js";
+import { calculateRange } from "./range-util.js";
 
 const BOM = "\uFEFF";
 
@@ -68,7 +68,7 @@ async function coreFormat(originalText, opts, addAlignmentSize = 0) {
       oldCursorNodeStart = opts.locStart(opts.cursorNode);
       oldCursorNodeText = text.slice(
         oldCursorNodeStart,
-        opts.locEnd(opts.cursorNode)
+        opts.locEnd(opts.cursorNode),
       );
 
       cursorOffsetRelativeToOldCursorNode =
@@ -102,7 +102,7 @@ async function coreFormat(originalText, opts, addAlignmentSize = 0) {
     oldCursorNodeCharArray.splice(
       cursorOffsetRelativeToOldCursorNode,
       0,
-      CURSOR
+      CURSOR,
     );
 
     // eslint-disable-next-line unicorn/prefer-spread
@@ -110,7 +110,7 @@ async function coreFormat(originalText, opts, addAlignmentSize = 0) {
 
     const cursorNodeDiff = diffArrays(
       oldCursorNodeCharArray,
-      newCursorNodeCharArray
+      newCursorNodeCharArray,
     );
 
     let cursorOffset = newCursorNodeStart;
@@ -140,7 +140,7 @@ async function formatRange(originalText, opts) {
   // Use `Math.min` since `lastIndexOf` returns 0 when `rangeStart` is 0
   const rangeStart2 = Math.min(
     rangeStart,
-    text.lastIndexOf("\n", rangeStart) + 1
+    text.lastIndexOf("\n", rangeStart) + 1,
   );
   const indentString = text.slice(rangeStart2, rangeStart).match(/^\s*/)[0];
 
@@ -160,7 +160,7 @@ async function formatRange(originalText, opts) {
       // Always use `lf` to format, we'll replace it later
       endOfLine: "lf",
     },
-    alignmentSize
+    alignmentSize,
   );
 
   // Since the range contracts to avoid trailing whitespace,
@@ -184,7 +184,7 @@ async function formatRange(originalText, opts) {
     if (cursorOffset >= 0 && eol === "\r\n") {
       cursorOffset += countEndOfLineChars(
         formatted.slice(0, cursorOffset),
-        "\n"
+        "\n",
       );
     }
 
@@ -219,7 +219,7 @@ function normalizeIndexes(text, options) {
 function normalizeInputAndOptions(text, options) {
   let { cursorOffset, rangeStart, rangeEnd, endOfLine } = normalizeIndexes(
     text,
-    options
+    options,
   );
 
   const hasBOM = text.charAt(0) === BOM;
@@ -268,7 +268,7 @@ async function hasPragma(text, options) {
 async function formatWithCursor(originalText, originalOptions) {
   let { hasBOM, text, options } = normalizeInputAndOptions(
     originalText,
-    await normalizeFormatOptions(originalOptions)
+    await normalizeFormatOptions(originalOptions),
   );
 
   if (
@@ -312,7 +312,7 @@ async function formatWithCursor(originalText, originalOptions) {
 async function parse(originalText, originalOptions, devOptions) {
   const { text, options } = normalizeInputAndOptions(
     originalText,
-    await normalizeFormatOptions(originalOptions)
+    await normalizeFormatOptions(originalOptions),
   );
   const parsed = await parseText(text, options);
   if (devOptions) {
@@ -352,15 +352,15 @@ async function printToDoc(originalText, options) {
 async function printDocToString(doc, options) {
   return printDocToStringWithoutNormalizeOptions(
     doc,
-    await normalizeFormatOptions(options)
+    await normalizeFormatOptions(options),
   );
 }
 
 export {
-  formatWithCursor,
-  parse,
   formatAst,
   formatDoc,
-  printToDoc,
+  formatWithCursor,
+  parse,
   printDocToString,
+  printToDoc,
 };

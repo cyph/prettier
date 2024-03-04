@@ -1,9 +1,10 @@
 import { parseExpression } from "@babel/parser";
-import isNonEmptyArray from "../utils/is-non-empty-array.js";
+
 import createError from "../common/parser-create-error.js";
-import createParser from "../language-js/parse/utils/create-parser.js";
 import createBabelParseError from "../language-js/parse/utils/create-babel-parse-error.js";
+import createParser from "../language-js/parse/utils/create-parser.js";
 import wrapBabelExpression from "../language-js/parse/utils/wrap-babel-expression.js";
+import isNonEmptyArray from "../utils/is-non-empty-array.js";
 
 function createJsonParse(options = {}) {
   const { allowComments = true } = options;
@@ -14,18 +15,9 @@ function createJsonParse(options = {}) {
       ast = parseExpression(text, {
         tokens: true,
         ranges: true,
+        attachComment: false,
       });
     } catch (/** @type {any} */ error) {
-      if (
-        error?.reasonCode === "MissingPlugin" ||
-        error?.reasonCode === "MissingOneOfPlugins"
-      ) {
-        throw createBabelParseError({
-          message: "Unexpected token",
-          loc: error.loc,
-        });
-      }
-
       throw createBabelParseError(error);
     }
 
@@ -46,7 +38,7 @@ function createJsonError(node, description) {
     ({ line, column }) => ({
       line,
       column: column + 1,
-    })
+    }),
   );
   return createError(`${description} is not allowed in JSON.`, {
     loc: { start, end },
@@ -101,7 +93,7 @@ function assertJsonNode(node) {
 
       throw createJsonError(
         argument,
-        `Operator '${operator}' before '${argument.type}'`
+        `Operator '${operator}' before '${argument.type}'`,
       );
     }
     case "Identifier":
@@ -120,7 +112,7 @@ function assertJsonNode(node) {
       if (isNonEmptyArray(node.expressions)) {
         throw createJsonError(
           node.expressions[0],
-          "'TemplateLiteral' with expression"
+          "'TemplateLiteral' with expression",
         );
       }
 
@@ -150,6 +142,7 @@ const jsonParsers = {
     },
   }),
   json5: createParser(parseJson),
+  jsonc: createParser(parseJson),
   "json-stringify": createParser({
     parse: createJsonParse({ allowComments: false }),
     astFormat: "estree-json",

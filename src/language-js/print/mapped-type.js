@@ -1,13 +1,13 @@
+import {
+  group,
+  ifBreak,
+  indent,
+  line,
+  softline,
+} from "../../document/builders.js";
 import { printDanglingComments } from "../../main/comments/print.js";
 import hasNewlineInRange from "../../utils/has-newline-in-range.js";
 import { locStart } from "../loc.js";
-import {
-  group,
-  softline,
-  indent,
-  ifBreak,
-  line,
-} from "../../document/builders.js";
 
 /**
  * @param {string | null} optional
@@ -59,7 +59,7 @@ function printTypescriptMappedType(path, options, print) {
     options.originalText,
     locStart(node),
     // Ideally, this should be the next token after `{`, but there is no node starts with it.
-    locStart(node.typeParameter)
+    locStart(node.typeParameter),
   );
 
   return group(
@@ -81,12 +81,12 @@ function printTypescriptMappedType(path, options, print) {
       options.bracketSpacing ? line : softline,
       "}",
     ],
-    { shouldBreak }
+    { shouldBreak },
   );
 }
 
 export {
   printFlowMappedTypeProperty,
-  printTypeScriptMappedTypeModifier,
   printTypescriptMappedType,
+  printTypeScriptMappedTypeModifier,
 };

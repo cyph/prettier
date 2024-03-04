@@ -1,6 +1,6 @@
 import { outdent } from "outdent";
 
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -126,5 +126,5 @@ run_spec(
       },
     ],
   },
-  ["html"]
+  ["html"],
 );

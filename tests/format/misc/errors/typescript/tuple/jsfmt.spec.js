@@ -1,4 +1,4 @@
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -8,5 +8,5 @@ run_spec(
       "type T = [x<y>: A];",
     ],
   },
-  ["babel-ts", "typescript"]
+  ["babel-ts", "typescript"],
 );

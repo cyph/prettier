@@ -1,4 +1,5 @@
 import collapseWhiteSpace from "collapse-white-space";
+
 import isFrontMatter from "../utils/front-matter/is-front-matter.js";
 import { startWithPragma } from "./pragma.js";
 
@@ -46,6 +47,16 @@ function clean(ast, newObj, parent) {
     ast.type === "imageReference"
   ) {
     newObj.label = collapseWhiteSpace(ast.label);
+  }
+
+  if (
+    (ast.type === "link" || ast.type === "image") &&
+    ast.url &&
+    ast.url.includes("(")
+  ) {
+    for (const character of "<>") {
+      newObj.url = ast.url.replaceAll(character, encodeURIComponent(character));
+    }
   }
 
   if (

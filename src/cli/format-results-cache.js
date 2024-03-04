@@ -1,8 +1,9 @@
 // Inspired by LintResultsCache from ESLint
 // https://github.com/eslint/eslint/blob/c2d0a830754b6099a3325e6d3348c3ba983a677a/lib/cli-engine/lint-result-cache.js
 
-import fileEntryCache from "file-entry-cache";
 import stringify from "fast-json-stable-stringify";
+import fileEntryCache from "file-entry-cache";
+
 import { version as prettierVersion } from "../index.js";
 import { createHash } from "./utils.js";
 
@@ -18,7 +19,7 @@ function getHashOfOptions(options) {
     return optionsHashCache.get(options);
   }
   const hash = createHash(
-    `${prettierVersion}_${nodeVersion}_${stringify(options)}`
+    `${prettierVersion}_${nodeVersion}_${stringify(options)}`,
   );
   optionsHashCache.set(options, hash);
   return hash;
@@ -48,7 +49,7 @@ class FormatResultsCache {
     this.#fileEntryCache = fileEntryCache.create(
       /* cacheId */ cacheFileLocation,
       /* directory */ undefined,
-      useChecksum
+      useChecksum,
     );
   }
 

@@ -1,30 +1,30 @@
-import { printDanglingComments } from "../../main/comments/print.js";
 import {
+  group,
+  hardline,
+  ifBreak,
+  indent,
+  indentIfBreak,
   join,
   line,
-  hardline,
-  softline,
-  group,
-  indent,
-  ifBreak,
   lineSuffixBoundary,
-  indentIfBreak,
+  softline,
 } from "../../document/builders.js";
-import {
-  isTestCall,
-  hasComment,
-  CommentCheckFlags,
-  shouldPrintComma,
-  getFunctionParameters,
-  isObjectType,
-} from "../utils/index.js";
+import { printDanglingComments } from "../../main/comments/print.js";
 import createGroupIdMapper from "../../utils/create-group-id-mapper.js";
+import {
+  CommentCheckFlags,
+  getFunctionParameters,
+  hasComment,
+  isObjectType,
+  isTestCall,
+  shouldPrintComma,
+} from "../utils/index.js";
+import { isArrowFunctionVariableDeclarator } from "./assignment.js";
+import { printTypeScriptMappedTypeModifier } from "./mapped-type.js";
 import {
   printTypeAnnotationProperty,
   shouldHugType,
 } from "./type-annotation.js";
-import { isArrowFunctionVariableDeclarator } from "./assignment.js";
-import { printTypeScriptMappedTypeModifier } from "./mapped-type.js";
 
 const getTypeParametersGroupId = createGroupIdMapper("typeParameters");
 
@@ -63,7 +63,7 @@ function printTypeParameters(path, options, print, paramsKey) {
     undefined,
     (node, name) => name === "typeAnnotation",
     (node) => node.type === "Identifier",
-    isArrowFunctionVariableDeclarator
+    isArrowFunctionVariableDeclarator,
   );
 
   const shouldInline =
@@ -87,10 +87,10 @@ function printTypeParameters(path, options, print, paramsKey) {
     node.type === "TSTypeParameterInstantiation" // https://github.com/microsoft/TypeScript/issues/21984
       ? ""
       : shouldForceTrailingComma(path, options, paramsKey)
-      ? ","
-      : shouldPrintComma(options)
-      ? ifBreak(",")
-      : "";
+        ? ","
+        : shouldPrintComma(options)
+          ? ifBreak(",")
+          : "";
 
   return group(
     [
@@ -100,7 +100,7 @@ function printTypeParameters(path, options, print, paramsKey) {
       softline,
       ">",
     ],
-    { id: getTypeParametersGroupId(node) }
+    { id: getTypeParametersGroupId(node) },
   );
 }
 
@@ -133,7 +133,7 @@ function printTypeParameter(path, options, print) {
     if (parent.readonly) {
       parts.push(
         printTypeScriptMappedTypeModifier(parent.readonly, "readonly"),
-        " "
+        " ",
       );
     }
     parts.push("[", name);
@@ -143,7 +143,7 @@ function printTypeParameter(path, options, print) {
     if (parent.nameType) {
       parts.push(
         " as ",
-        path.callParent(() => print("nameType"))
+        path.callParent(() => print("nameType")),
       );
     }
     parts.push("]");
@@ -178,7 +178,7 @@ function printTypeParameter(path, options, print) {
       " extends",
       group(indent(line), { id: groupId }),
       lineSuffixBoundary,
-      indentIfBreak(print("constraint"), { groupId })
+      indentIfBreak(print("constraint"), { groupId }),
     );
   }
 
@@ -189,4 +189,4 @@ function printTypeParameter(path, options, print) {
   return group(parts);
 }
 
-export { printTypeParameter, printTypeParameters, getTypeParametersGroupId };
+export { getTypeParametersGroupId, printTypeParameter, printTypeParameters };

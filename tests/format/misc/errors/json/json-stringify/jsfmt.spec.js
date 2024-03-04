@@ -1,4 +1,4 @@
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -7,5 +7,5 @@ run_spec(
       '{"foo": /* comment */ 1}',
     ],
   },
-  ["json-stringify"]
+  ["json-stringify"],
 );

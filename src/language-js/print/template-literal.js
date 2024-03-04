@@ -1,24 +1,26 @@
-import getStringWidth from "../../utils/get-string-width.js";
-import getIndentSize from "../../utils/get-indent-size.js";
 import {
-  join,
-  hardline,
-  softline,
-  group,
-  indent,
-  align,
-  lineSuffixBoundary,
   addAlignmentToDoc,
+  align,
+  group,
+  hardline,
+  indent,
+  join,
   label,
+  lineSuffixBoundary,
+  softline,
 } from "../../document/builders.js";
 import { printDocToString } from "../../document/printer.js";
 import { mapDoc } from "../../document/utils.js";
+import getIndentSize from "../../utils/get-indent-size.js";
+import getStringWidth from "../../utils/get-string-width.js";
+import hasNewlineInRange from "../../utils/has-newline-in-range.js";
+import { locEnd, locStart } from "../loc.js";
 import {
-  isBinaryish,
-  isSimpleTemplateLiteral,
   hasComment,
+  isBinaryCastExpression,
+  isBinaryish,
   isMemberExpression,
-  isTSTypeExpression,
+  isSimpleTemplateLiteral,
 } from "../utils/index.js";
 
 function printTemplateLiteral(path, print, options) {
@@ -46,7 +48,7 @@ function printTemplateLiteral(path, print, options) {
         printDocToString(doc, {
           ...options,
           printWidth: Number.POSITIVE_INFINITY,
-        }).formatted
+        }).formatted,
     );
   }
 
@@ -82,15 +84,39 @@ function printTemplateLiteral(path, print, options) {
 
     if (!isSimple) {
       const expression = node[expressionsKey][index];
+
+      let interpolationHasNewline = hasNewlineInRange(
+        options.originalText,
+        locEnd(quasi),
+        locStart(node.quasis[index + 1]),
+      );
+
+      if (!interpolationHasNewline) {
+        // Never add a newline to an interpolation which didn't already have one...
+        const renderedExpression = printDocToString(expressionDoc, {
+          ...options,
+          printWidth: Number.POSITIVE_INFINITY,
+        }).formatted;
+
+        // ... unless one will be introduced anyway, e.g. by a nested function.
+        // This case is rare, so we can pay the cost of re-rendering.
+        if (renderedExpression.includes("\n")) {
+          interpolationHasNewline = true;
+        } else {
+          expressionDoc = renderedExpression;
+        }
+      }
+
       // Breaks at the template element boundaries (${ and }) are preferred to breaking
       // in the middle of a MemberExpression
       if (
-        hasComment(expression) ||
-        isMemberExpression(expression) ||
-        expression.type === "ConditionalExpression" ||
-        expression.type === "SequenceExpression" ||
-        isTSTypeExpression(expression) ||
-        isBinaryish(expression)
+        interpolationHasNewline &&
+        (hasComment(expression) ||
+          isMemberExpression(expression) ||
+          expression.type === "ConditionalExpression" ||
+          expression.type === "SequenceExpression" ||
+          isBinaryCastExpression(expression) ||
+          isBinaryish(expression))
       ) {
         expressionDoc = [indent([softline, expressionDoc]), softline];
       }
@@ -144,7 +170,7 @@ function printJestEachTemplateLiteral(path, options, print) {
           printWidth: Number.POSITIVE_INFINITY,
           endOfLine: "lf",
         }).formatted +
-        "}"
+        "}",
     );
 
     const tableBody = [{ hasLineBreak: false, cells: [] }];
@@ -164,7 +190,7 @@ function printJestEachTemplateLiteral(path, options, print) {
 
     const maxColumnCount = Math.max(
       headerNames.length,
-      ...tableBody.map((row) => row.cells.length)
+      ...tableBody.map((row) => row.cells.length),
     );
 
     const maxColumnWidths = Array.from({ length: maxColumnCount }).fill(0);
@@ -176,7 +202,7 @@ function printJestEachTemplateLiteral(path, options, print) {
       for (const [index, cell] of cells.entries()) {
         maxColumnWidths[index] = Math.max(
           maxColumnWidths[index],
-          getStringWidth(cell)
+          getStringWidth(cell),
         );
       }
     }
@@ -195,14 +221,14 @@ function printJestEachTemplateLiteral(path, options, print) {
                 row.hasLineBreak
                   ? cell
                   : cell +
-                    " ".repeat(maxColumnWidths[index] - getStringWidth(cell))
-              )
-            )
-          )
+                    " ".repeat(maxColumnWidths[index] - getStringWidth(cell)),
+              ),
+            ),
+          ),
         ),
       ]),
       hardline,
-      "`"
+      "`",
     );
     return parts;
   }
@@ -220,7 +246,7 @@ function printTemplateExpression(path, print) {
 function printTemplateExpressions(path, print) {
   return path.map(
     (path) => printTemplateExpression(path, print),
-    "expressions"
+    "expressions",
   );
 }
 
@@ -270,9 +296,9 @@ function isJestEachTemplateLiteral({ node, parent }) {
 }
 
 export {
-  printTemplateLiteral,
+  escapeTemplateCharacters,
   printTaggedTemplateLiteral,
   printTemplateExpressions,
-  escapeTemplateCharacters,
+  printTemplateLiteral,
   uncookTemplateElementValue,
 };

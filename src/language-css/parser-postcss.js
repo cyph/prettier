@@ -1,21 +1,22 @@
 import postcssParse from "postcss/lib/parse";
 import postcssLess from "postcss-less";
 import postcssScssParse from "postcss-scss/lib/scss-parse";
+
 import createError from "../common/parser-create-error.js";
 import parseFrontMatter from "../utils/front-matter/parse.js";
-import { hasPragma } from "./pragma.js";
 import {
-  locStart,
-  locEnd,
   calculateLoc,
+  locEnd,
+  locStart,
   replaceQuotesInInlineComments,
 } from "./loc.js";
-import isSCSSNestedPropertyNode from "./utils/is-scss-nested-property-node.js";
-import isModuleRuleName from "./utils/is-module-rule-name.js";
-import parseValue from "./parse/parse-value.js";
-import parseSelector from "./parse/parse-selector.js";
 import parseMediaQuery from "./parse/parse-media-query.js";
+import parseSelector from "./parse/parse-selector.js";
+import parseValue from "./parse/parse-value.js";
 import { addTypePrefix } from "./parse/utils.js";
+import { hasPragma } from "./pragma.js";
+import isModuleRuleName from "./utils/is-module-rule-name.js";
+import isSCSSNestedPropertyNode from "./utils/is-scss-nested-property-node.js";
 
 const DEFAULT_SCSS_DIRECTIVE = /(\s*)(!default).*$/;
 const GLOBAL_SCSS_DIRECTIVE = /(\s*)(!global).*$/;
@@ -47,13 +48,13 @@ function parseNestedCSS(node, options) {
       if (node.value.trimEnd().endsWith("}")) {
         const textBefore = options.originalText.slice(
           0,
-          node.source.start.offset
+          node.source.start.offset,
         );
         const nodeText =
           "a".repeat(node.prop.length) +
           options.originalText.slice(
             node.source.start.offset + node.prop.length,
-            node.source.end.offset + 1
+            node.source.end.offset,
           );
         const fakeContent = textBefore.replaceAll(/[^\n]/g, " ") + nodeText;
         let parse;
@@ -234,7 +235,7 @@ function parseNestedCSS(node, options) {
         const customSelector = node.params.match(/:--\S+\s+/)[0].trim();
         node.customSelector = customSelector;
         node.selector = parseSelector(
-          node.params.slice(customSelector.length).trim()
+          node.params.slice(customSelector.length).trim(),
         );
         delete node.params;
         return node;
@@ -421,7 +422,7 @@ function parseLess(text, options = {}) {
     // See comments for `replaceQuotesInInlineComments` in `loc.js`.
     (text) => postcssLess.parse(replaceQuotesInInlineComments(text)),
     text,
-    options
+    options,
   );
 }
 

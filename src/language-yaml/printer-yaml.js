@@ -12,34 +12,34 @@ import {
 import { replaceEndOfLine } from "../document/utils.js";
 import isPreviousLineEmpty from "../utils/is-previous-line-empty.js";
 import UnexpectedNodeError from "../utils/unexpected-node-error.js";
-import { insertPragma, isPragma } from "./pragma.js";
-import { locStart } from "./loc.js";
 import embed from "./embed.js";
-import {
-  getFlowScalarLineContents,
-  getLastDescendantNode,
-  hasLeadingComments,
-  hasMiddleComments,
-  hasTrailingComment,
-  hasEndComments,
-  hasPrettierIgnore,
-  isLastDescendantNode,
-  isNode,
-  isInlineNode,
-} from "./utils.js";
 import getVisitorKeys from "./get-visitor-keys.js";
-import preprocess from "./print-preprocess.js";
-import {
-  alignWithSpaces,
-  printNextEmptyLine,
-  shouldPrintEndComments,
-} from "./print/misc.js";
+import { locStart } from "./loc.js";
+import { insertPragma, isPragma } from "./pragma.js";
+import printBlock from "./print/block.js";
 import {
   printFlowMapping,
   printFlowSequence,
 } from "./print/flow-mapping-sequence.js";
 import printMappingItem from "./print/mapping-item.js";
-import printBlock from "./print/block.js";
+import {
+  alignWithSpaces,
+  printNextEmptyLine,
+  shouldPrintEndComments,
+} from "./print/misc.js";
+import preprocess from "./print-preprocess.js";
+import {
+  getFlowScalarLineContents,
+  getLastDescendantNode,
+  hasEndComments,
+  hasLeadingComments,
+  hasMiddleComments,
+  hasPrettierIgnore,
+  hasTrailingComment,
+  isInlineNode,
+  isLastDescendantNode,
+  isNode,
+} from "./utils.js";
 
 function genericPrint(path, options, print) {
   const { node } = path;
@@ -100,8 +100,8 @@ function genericPrint(path, options, print) {
       replaceEndOfLine(
         options.originalText
           .slice(node.position.start.offset, node.position.end.offset)
-          .trimEnd()
-      )
+          .trimEnd(),
+      ),
     );
   } else {
     parts.push(group(printNode(path, options, print)));
@@ -117,7 +117,7 @@ function genericPrint(path, options, print) {
           ? ""
           : breakParent,
         print("trailingComment"),
-      ])
+      ]),
     );
   }
 
@@ -134,10 +134,10 @@ function genericPrint(path, options, print) {
                 : "",
               print(),
             ],
-            "endComments"
-          )
+            "endComments",
+          ),
         ),
-      ])
+      ]),
     );
   }
   parts.push(nextEmptyLine);
@@ -230,7 +230,7 @@ function printNode(path, options, print) {
     case "tag":
       return options.originalText.slice(
         node.position.start.offset,
-        node.position.end.offset
+        node.position.end.offset,
       );
     case "anchor":
       return ["&", node.value];
@@ -239,9 +239,9 @@ function printNode(path, options, print) {
         node.type,
         options.originalText.slice(
           node.position.start.offset,
-          node.position.end.offset
+          node.position.end.offset,
         ),
-        options
+        options,
       );
     case "quoteDouble":
     case "quoteSingle": {
@@ -250,7 +250,7 @@ function printNode(path, options, print) {
 
       const raw = options.originalText.slice(
         node.position.start.offset + 1,
-        node.position.end.offset - 1
+        node.position.end.offset - 1,
       );
 
       if (
@@ -279,7 +279,7 @@ function printNode(path, options, print) {
                   .replaceAll('\\"', doubleQuote)
                   .replaceAll("'", singleQuote.repeat(2))
               : raw,
-            options
+            options,
           ),
           singleQuote,
         ];
@@ -294,7 +294,7 @@ function printNode(path, options, print) {
               ? // single quote needs to be escaped by 2 single quotes in quoteSingle
                 raw.replaceAll("''", singleQuote)
               : raw,
-            options
+            options,
           ),
           doubleQuote,
         ];
@@ -366,7 +366,7 @@ function shouldPrintDocumentHeadEndMarker(path, options) {
      */
     (path.isFirst &&
       /---(?:\s|$)/.test(
-        options.originalText.slice(locStart(document), locStart(document) + 4)
+        options.originalText.slice(locStart(document), locStart(document) + 4),
       )) ||
     /**
      * %DIRECTIVE
@@ -398,7 +398,7 @@ function printFlowScalarContent(nodeType, content, options) {
   const lineContents = getFlowScalarLineContents(nodeType, content, options);
   return join(
     hardline,
-    lineContents.map((lineContentWords) => fill(join(line, lineContentWords)))
+    lineContents.map((lineContentWords) => fill(join(line, lineContentWords))),
   );
 }
 

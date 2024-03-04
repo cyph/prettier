@@ -1,9 +1,9 @@
 import {
+  group,
+  indent,
   join,
   line,
-  group,
   softline,
-  indent,
 } from "../../document/builders.js";
 
 function printHtmlBinding(path, options, print) {
@@ -19,6 +19,19 @@ function printHtmlBinding(path, options, print) {
     return options.__isVueForBindingLeft
       ? ["(", indent([softline, group(doc)]), softline, ")"]
       : doc;
+  }
+
+  if (options.__isEmbeddedTypescriptGenericParameters) {
+    const parameterDocs = path.map(
+      print,
+      "program",
+      "body",
+      0,
+      "typeParameters",
+      "params",
+    );
+
+    return join([",", line], parameterDocs);
   }
 }
 

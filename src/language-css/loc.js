@@ -1,6 +1,6 @@
-import { skipEverythingButNewLine } from "../utils/skip.js";
 import isNonEmptyArray from "../utils/is-non-empty-array.js";
 import lineColumnToIndex from "../utils/line-column-to-index.js";
+import { skipEverythingButNewLine } from "../utils/skip.js";
 
 function calculateLocStart(node, text) {
   // `postcss>=8`
@@ -28,8 +28,7 @@ function calculateLocEnd(node, text) {
 
   // `postcss>=8`
   if (typeof node.source?.end?.offset === "number") {
-    // https://github.com/postcss/postcss/issues/1450
-    return node.source.end.offset + 1;
+    return node.source.end.offset;
   }
 
   if (node.source) {
@@ -62,7 +61,7 @@ function calculateLoc(node, text) {
       calculateValueNodeLoc(
         child,
         getValueRootOffset(node),
-        child.text || child.value
+        child.text || child.value,
       );
     } else {
       calculateLoc(child, text);
@@ -239,4 +238,4 @@ function locEnd(node) {
   return node.source?.endOffset;
 }
 
-export { locStart, locEnd, calculateLoc, replaceQuotesInInlineComments };
+export { calculateLoc, locEnd, locStart, replaceQuotesInInlineComments };

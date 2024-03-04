@@ -1,30 +1,35 @@
 import assert from "node:assert";
-import { printDanglingComments } from "../../main/comments/print.js";
+
 import {
-  softline,
   group,
-  indent,
-  ifBreak,
   hardline,
+  ifBreak,
+  indent,
+  softline,
 } from "../../document/builders.js";
+import { printDanglingComments } from "../../main/comments/print.js";
+import hasNewlineInRange from "../../utils/has-newline-in-range.js";
+import { locEnd, locStart } from "../loc.js";
 import {
-  getFunctionParameters,
-  hasLeadingOwnLineComment,
-  isBinaryish,
-  hasComment,
   CommentCheckFlags,
-  isCallExpression,
   getCallArguments,
-  hasNakedLeftSide,
+  getFunctionParameters,
   getLeftSide,
+  hasComment,
+  hasLeadingOwnLineComment,
+  hasNakedLeftSide,
+  isBinaryish,
+  isCallExpression,
+  isJsxElement,
+  isMethod,
 } from "../utils/index.js";
 import {
   printFunctionParameters,
-  shouldGroupFunctionParameters,
   shouldBreakFunctionParameters,
+  shouldGroupFunctionParameters,
 } from "./function-parameters.js";
+import { printDeclareToken, printFunctionTypeParameters } from "./misc.js";
 import { printPropertyKey } from "./property.js";
-import { printFunctionTypeParameters, printDeclareToken } from "./misc.js";
 import { printTypeAnnotationProperty } from "./type-annotation.js";
 
 /**
@@ -32,20 +37,16 @@ import { printTypeAnnotationProperty } from "./type-annotation.js";
  * @typedef {import("../../document/builders.js").Doc} Doc
  */
 
-const isMethod = (node) =>
-  node.type === "ObjectMethod" ||
-  node.type === "ClassMethod" ||
-  node.type === "ClassPrivateMethod" ||
-  node.type === "MethodDefinition" ||
-  node.type === "TSAbstractMethodDefinition" ||
-  node.type === "TSDeclareMethod" ||
-  ((node.type === "Property" || node.type === "ObjectProperty") &&
-    (node.method || node.kind === "get" || node.kind === "set"));
-
-const isMethodValue = (path) =>
-  path.node.type === "FunctionExpression" &&
-  path.key === "value" &&
-  isMethod(path.parent);
+const isMethodValue = ({ node, key, parent }) =>
+  key === "value" &&
+  node.type === "FunctionExpression" &&
+  (parent.type === "ObjectMethod" ||
+    parent.type === "ClassMethod" ||
+    parent.type === "ClassPrivateMethod" ||
+    parent.type === "MethodDefinition" ||
+    parent.type === "TSAbstractMethodDefinition" ||
+    parent.type === "TSDeclareMethod" ||
+    (parent.type === "Property" && isMethod(parent)));
 
 /*
 - "FunctionDeclaration"
@@ -70,7 +71,7 @@ function printFunction(path, print, options, args) {
       isCallExpression(parent) &&
       (getCallArguments(parent).length > 1 ||
         getFunctionParameters(node).every(
-          (param) => param.type === "Identifier" && !param.typeAnnotation
+          (param) => param.type === "Identifier" && !param.typeAnnotation,
         ))
     ) {
       expandArg = true;
@@ -90,12 +91,12 @@ function printFunction(path, print, options, args) {
     options,
     expandArg,
     undefined,
-    {start: !!(node.id && node.id.name), end: !!node.returnType}
+    {start: !!(node.id && node.id.name), end: !!node.returnType},
   );
   const returnTypeDoc = printReturnType(path, print);
   const shouldGroupParameters = shouldGroupFunctionParameters(
     node,
-    returnTypeDoc
+    returnTypeDoc,
   );
 
   parts.push(
@@ -105,7 +106,7 @@ function printFunction(path, print, options, args) {
       returnTypeDoc,
     ]),
     node.body ? " " : "",
-    print("body")
+    print("body"),
   );
 
   if (options.semi && (node.declare || !node.body)) {
@@ -149,7 +150,7 @@ function printMethod(path, options, print) {
   parts.push(
     printPropertyKey(path, options, print),
     node.optional || node.key.optional ? "?" : "",
-    node === value ? printMethodValue(path, options, print) : print("value")
+    node === value ? printMethodValue(path, options, print) : print("value"),
   );
 
   return parts;
@@ -169,7 +170,7 @@ function printMethodValue(path, options, print) {
   const shouldBreakParameters = shouldBreakFunctionParameters(node);
   const shouldGroupParameters = shouldGroupFunctionParameters(
     node,
-    returnTypeDoc
+    returnTypeDoc,
   );
   const parts = [
     printFunctionTypeParameters(path, options, print),
@@ -177,8 +178,8 @@ function printMethodValue(path, options, print) {
       shouldBreakParameters
         ? group(parametersDoc, { shouldBreak: true })
         : shouldGroupParameters
-        ? group(parametersDoc)
-        : parametersDoc,
+          ? group(parametersDoc)
+          : parametersDoc,
       returnTypeDoc,
     ]),
   ];
@@ -249,7 +250,11 @@ function printReturnOrThrowArgument(path, options, print) {
       argumentDoc = ["(", indent([hardline, argumentDoc]), hardline, ")"];
     } else if (
       isBinaryish(node.argument) ||
-      node.argument.type === "SequenceExpression"
+      node.argument.type === "SequenceExpression" ||
+      (options.experimentalTernaries &&
+        node.argument.type === "ConditionalExpression" &&
+        (node.argument.consequent.type === "ConditionalExpression" ||
+          node.argument.alternate.type === "ConditionalExpression"))
     ) {
       argumentDoc = group([
         ifBreak("("),
@@ -295,7 +300,17 @@ function printThrowStatement(path, options, print) {
 // (the leftmost leaf node) and, if it (or its parents) has any
 // leadingComments, returns true (so it can be wrapped in parens).
 function returnArgumentHasLeadingComment(options, argument) {
-  if (hasLeadingOwnLineComment(options.originalText, argument)) {
+  if (
+    hasLeadingOwnLineComment(options.originalText, argument) ||
+    (hasComment(argument, CommentCheckFlags.Leading, (comment) =>
+      hasNewlineInRange(
+        options.originalText,
+        locStart(comment),
+        locEnd(comment),
+      ),
+    ) &&
+      !isJsxElement(argument))
+  ) {
     return true;
   }
 
@@ -317,9 +332,9 @@ function returnArgumentHasLeadingComment(options, argument) {
 export {
   printFunction,
   printMethod,
-  printReturnStatement,
-  printThrowStatement,
   printMethodValue,
+  printReturnStatement,
   printReturnType,
+  printThrowStatement,
   shouldPrintParamsWithoutParens,
 };

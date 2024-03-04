@@ -1,7 +1,7 @@
 /* eslint-disable no-irregular-whitespace */
 import { outdent } from "outdent";
 
-run_spec(
+runFormatTest(
   {
     importMeta: import.meta,
     snippets: [
@@ -84,5 +84,5 @@ run_spec(
       },
     ].map((test) => ({ ...test, output: test.output + "\n" })),
   },
-  ["flow", "typescript"]
+  ["flow", "typescript"],
 );
