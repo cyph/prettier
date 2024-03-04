@@ -15,7 +15,7 @@ function printAngularControlFlowBlock(path, options, print) {
   const docs = [];
 
   if (isPreviousBlockUnClosed(path)) {
-    docs.push("} ");
+    docs.push("}", hardline);
   }
 
   docs.push("@", node.name);

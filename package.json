@@ -1,6 +1,6 @@
 {
   "name": "@cyph/prettier",
-  "version": "3.2.5",
+  "version": "3.2.6",
   "description": "Fork of prettier for Cyph style guidelines",
   "bin": {
     "cyph-prettier": "./bin/prettier.cjs"
